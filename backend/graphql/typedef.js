@@ -17,7 +17,7 @@ type SuccessMessage {
 }
 
 input ListInput {
-  listIds: [String]!
+  listId: String!
 }
 
 type User {
@@ -81,7 +81,8 @@ type Mutation {
   deleteUser(userId: String!, password: String!): SuccessMessage
   createList(userId: String!, title: String!, description: String!): List!
   #deleteList(listId: String!, userId: String!): SuccessMessage
-  updateItemInLists(userId: String!, input: ListInput!, itemId: String!, userRating: Int!, ): [List]!
+  updateItemInLists(userId: String!, lists: [ListInput]!, itemId: String!, userRating: Int!, ): [List]!
+  removeItemFromList(userId: String!, listId: String!, itemId: String!): List!
   updateItem(userId: String!, itemId: String!, userRating: Int!, comment: String!): Item!
   deleteItem(id: String!, userId: String!): SuccessMessage
   #deleteItemFromList(userId: String!, listId: String!, itemId: String!): SuccessMessage

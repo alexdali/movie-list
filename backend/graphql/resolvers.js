@@ -12,7 +12,7 @@ import {
   getUsers, getUser, getUserByArg, getLists, getList, getListsByUser, getItemsByList, getItemsByUser, getDataByUser,
 } from '../mongodb/controllersGet';
 import {
-  createUser, updatePassword, deleteUser, createList, updateItemInLists, updateItem, deleteItem,
+  createUser, updatePassword, deleteUser, createList, updateItemInLists, removeItemFromList, updateItem, deleteItem,
 } from '../mongodb/controllersSet';
 
 /* eslint no-underscore-dangle: [1, { "allow": ["__id"] }] */
@@ -106,7 +106,7 @@ const resolvers = {
     listsByUser: async (_, { id }) => {
       const result = await getListsByUser({ userId: id });
       if (result === []) return result;
-      const sortLists = result.sort((a, b) => {
+      const lists = result.sort((a, b) => {
         const res = b.createdDate - a.createdDate;
         // console.log(`q lists sort res b-a: ${res}`);
         return res;
@@ -119,7 +119,7 @@ const resolvers = {
           items: itemsByList,
         };
       });
-      return sortLists;
+      return lists;
     },
 
     //   commentsByList: async (_, { id }) => {
@@ -327,6 +327,17 @@ const resolvers = {
       console.log(`m updateItemInLists dataItemInLists: ${JSON.stringify(dataItemInLists)}`);
       const updatedLists = await updateItemInLists(dataItemInLists);
       return updatedLists;
+    },
+    // remove Item from List
+    removeItemFromList: async (_, { userId, listId, itemId }, context) => {
+      const { id } = context.user;
+      if (id !== userId) {
+        throw new Error('Вы не можете редактировать чужой список!');
+      }
+      const dataRemoveItem = { itemId, listId, itemId };
+      console.log(`m removeItemFromList dataRemoveItem: ${JSON.stringify(dataRemoveItem)}`);
+      const updatedList = await removeItemFromList(dataRemoveItem);
+      return updatedList;
     },
     // update userRating, comment for Item
     updateItem: async (_, {

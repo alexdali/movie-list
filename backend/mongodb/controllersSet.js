@@ -260,6 +260,46 @@ const updateItemInLists = async (arg) => {
 };
 
 
+// remove item from the list
+const removeItemFromList = async (arg) => {
+  const { itemId: _id, listId } = arg;
+  console.log(`c removeItemFromList arg: ${JSON.stringify(arg)}`);
+  const updatedItem = await Item.update(
+      { _id: list._id},
+      { $pull: { lists: listId } },
+      { new: true }
+    )
+    .then((result) => {
+      if(result===null) throw new Error("Error db: error when updating Item");
+      console.log(`c removeItemFromList Item.update: ${JSON.stringify(result)}`);
+      return result;
+    })
+    .catch((err) => console.error('Error db: ', err));
+  
+    // update the list: remove the item from Items array
+    const updatedList = await List.update(
+      { _id: list._id },
+      { $pull: { items: updatedItem._id } },
+      { new: true },
+    )
+      .then((result) =>
+      // console.log(`c updateItemInLists List.update: ${JSON.stringify(result)}`);
+        ({
+          id: result._id,
+          title: result.title,
+          userId: result.userId,
+          // numberOfItems: result.numberOfItems,
+          items: result.items,
+          listAverageRating: result.listAverageRating,
+          description: result.description,
+          createdDate: result.createdDate,
+        }))
+      .catch((err) => console.error('Error db: ', err));
+
+    return updatedList;
+};
+
+
 // Delete List
 // const deleteList = async (arg) => {
 //   console.log(`c deleteList arg: ${JSON.stringify(arg)}`);
@@ -331,5 +371,5 @@ const deleteItem = async (arg) => {
 };
 
 export {
-  createUser, updatePassword, deleteUser, createList, updateItemInLists, updateItem, deleteItem,
+  createUser, updatePassword, deleteUser, createList, updateItemInLists, removeItemFromList, updateItem, deleteItem,
 };
