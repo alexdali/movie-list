@@ -88,7 +88,7 @@ type Query {
   listsByUser(id: String!): [List]!
   itemsByUser(id: String!): [Item]!
   itemsByList(id: String!): [Item]!
-  searchItem(title: String, itemId: String, year: String, genre: String): [ItemDB]!
+  searchItem(title: String, imdbID: String, year: String, genre: String): [ItemDB]!
 }
 
 type Mutation {

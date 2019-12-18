@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+// import withApollo from 'next-with-apollo';
+import { ApolloConsumer } from 'react-apollo';
 import { Mutation, Query } from 'react-apollo';
 import { adopt } from 'react-adopt';
 import gql from 'graphql-tag';
@@ -53,15 +55,15 @@ const RowDiv = styled.div`
 
 
 const SEARCH_ITEM_QUERY = gql`
-  mutation SEARCH_ITEM_QUERY(
-    $title: String!
-    $itemId: String!
-    $year: String!
-    $genre: String!
+  query SEARCH_ITEM_QUERY(
+    $title: String
+    $imdbID: String
+    $year: String
+    $genre: String
   ) {
     searchItem(
       title: $title
-      itemId: $itemId
+      imdbID: $imdbID
       year: $year
       genre: $genre
       ) {
@@ -89,38 +91,45 @@ const ResultBlock = (props) => {
   // } = props.updateProps;
   const { item } = props;
   return (
-          <Item>
-            {/* <Item.Image src='https://react.semantic-ui.com/images/wireframe/image.png' /> */}
+          <Segment>
+            <Item>
+              {/* <Item.Image src='https://react.semantic-ui.com/images/wireframe/image.png' /> */}
+              <Item.Content>
+                <Item.Header as='h3'>{item.title}</Item.Header>
+                <Item.Meta>
+                  <span className='cinema'>{item.year || ''}</span>
+                  <span className='cinema'>{item.released || ''}</span>
+                  <span className='cinema'>{item.genre || ''}</span>
+                  <span className='cinema'>{item.imdbRating || ''}</span>
+                  <span className='cinema'>{item.imdbVotes || ''}</span>
+                  <span className='cinema'>{item.type || ''}</span>
+                  <span className='cinema'>{item.country || ''}</span>
+                  <span className='cinema'>{item.language || ''}</span>
+                  <span className='cinema'>{item.rated || ''}</span>
+                </Item.Meta>
+                <Item.Description>{item.plot || ''}</Item.Description>
+                <Item.Description>{item.director || ''}</Item.Description>
+                <Item.Description>{item.actors || ''}</Item.Description>
+                <Item.Extra>
+                  <Button floated='right'>
+                    Add to list
+                    <Icon name='right chevron' />
+                  </Button>
+                  <Rating icon='star' defaultRating={5} maxRating={10} />
+                </Item.Extra>
 
-            <Item.Content>
-              <Item.Header as='a'>{item.title}</Item.Header>
-              <Item.Meta>
-                <span className='cinema'>{item.yearOfRelease || ''}</span>
-                <span className='cinema'>{item.genre || ''}</span>
-                <span className='cinema'>{item.plotShort || ''}</span>
-              </Item.Meta>
-              <Item.Description>{item.plotShort || ''}</Item.Description>
-              {/* <Item.Description>{item.comment || ''}</Item.Description> */}
-              <Item.Extra>
-                <Button floated='right'>
-                  Add to list
-                  <Icon name='right chevron' />
-                </Button>
-                {/* <Label>IMAX</Label>
-                <Label icon='globe' content='Additional Languages' /> */}
-              </Item.Extra>
-              <Rating icon='star' defaultRating={5} maxRating={10} />
-            </Item.Content>
-          </Item>
+              </Item.Content>
+            </Item>
+          </Segment>
   );
 };
 
 /* eslint-disable */
-const Composed = adopt({
-  searchItemQuery: ({render}) => <Query mutation={SEARCH_ITEM_QUERY}>{render}</Query>,
-  // removeItemMutate: ({render}) => <Mutation mutation={REMOVE_ITEM_MUTATION}>{render}</Mutation>,
-  // deleteListMutate: ({render}) => <Mutation mutation={DELETE_LIST_MUTATION}>{render}</Mutation>,
-});
+// const Composed = adopt({
+//   searchItemQuery: ({render}) => <Query query={SEARCH_ITEM_QUERY}>{render}</Query>,
+//   // removeItemMutate: ({render}) => <Mutation mutation={REMOVE_ITEM_MUTATION}>{render}</Mutation>,
+//   // deleteListMutate: ({render}) => <Mutation mutation={DELETE_LIST_MUTATION}>{render}</Mutation>,
+// });
 /* eslint-enable */
 
 class SearchBlock extends Component {
@@ -143,7 +152,7 @@ class SearchBlock extends Component {
     // readOnly: false,
     searchblock: {
       title: '',
-      id: '',
+      imdbID: '',
       year: '',
       genre: '',
     },
@@ -174,7 +183,7 @@ class SearchBlock extends Component {
       // readOnly: true,
       searchblock: {
         title: '',
-        itemId: '',
+        imdbID: '',
         year: '',
         genre: '',
       },
@@ -191,169 +200,136 @@ class SearchBlock extends Component {
     // this.setState({ searchblock });
   };
 
-  searchItem = async (e, searchItemQuery) => {
+  searchRequest = async (e, client) => {
     e.preventDefault();
     const {
-      title, itemId, year, genre,
+      title, imdbID, year, genre,
     } = this.state.searchblock;
-    const res = await searchItemQuery({
+    // const res = await searchItem({
+    //   variables: {
+    //     title, imdbID, year, genre,
+    //   },
+    //   // refetchQueries: [
+    //   //   {
+    //   //     query: COMMENTS_BY_LIST_QUERY,
+    //   //     variables: { id: listId },
+    //   //   },
+    //   // ],
+    // });
+    const res = await client.query({
+      query: SEARCH_ITEM_QUERY,
       variables: {
-        title, itemId, year, genre,
+        title, imdbID, year, genre,
       },
-      // refetchQueries: [
-      //   {
-      //     query: COMMENTS_BY_LIST_QUERY,
-      //     variables: { id: listId },
-      //   },
-      //   {
-      //     query: LIST_QUERY,
-      //     variables: { id: listId },
-      //   },
-      //   {
-      //     query: CURRENT_USER_QUERY,
-      //   },
-      // ],
     });
-    console.log(`q searchItem res: ${JSON.stringify(res)}`);
+    console.log(`q searchItem res: ${res.data}`);
     // TO-DO handle key press: Enter
     this.setState({
       // showEdit: '',
       // readOnly: true,
       searchblock: {
         title: '',
-        itemId: '',
+        imdbID: '',
         year: '',
         genre: '',
       },
-      resultSearch: res,
+      resultSearch: res.data.searchItem,
     });
   };
 
 
   render() {
-    // const user = this.props.user ? this.props.user : {
-    //   id: '',
-    //   name: '',
-    //   email: '',
-    // };
+    // const { client } = this.props;
     const options = [
       { key: 'title', text: 'title', value: 'title' },
-      { key: 'ID', text: 'ID', value: 'itemId' },
+      { key: 'ID', text: 'ID', value: 'imdbID' },
     ];
     const {
-      searchblock,
+      searchblock: {
+        title, itemId, year, genre,
+      },
       // authorIsCurrentUser,
       // readOnly,
       // showEdit,
       resultSearch,
     } = this.state;
-    // const updateProps = {
-    //   showEdit, enableEdit: this.enableEdit, updatePostItem: this.updatePostItem, deletePostItem: this.deletePostItem,
-    // };
-    // const itemProps = {updateRatingItem, ListArray};
+
     return (
-      <Composed>
-      {({
-        searchItemQuery,
-      }) =>
-      // const { loading: loadingUpdate, error: errorUpdate } =updateListMutate;
-      // itemProps.updateList = updateListMutate;
-      // const itemProps = { removeItemMutate, updateListMutate };
-      /* if (errorUpdate) {
-          return (
-          <Message negative>
-            <Message.Header>Ошибка!</Message.Header>
-            <p>{errorUpdate.message.replace('GraphQL error: ', '')}</p>
-          </Message>);
-        } */
-        (
-          <RowDiv>
-            <Segment>
-              <Form
-                className='form-search'
-                onSubmit={(e) => this.searchItem(e, searchItemQuery)
-                }
-                // loading={loading}
-                // error
-              >
-                <Input
-                  label={<Dropdown defaultValue='title' options={options} />}
-                  labelPosition='right'
-                  placeholder='Find movie'
-                />
+        <RowDiv>
+          <Segment>
+          <ApolloConsumer>
+            {(client) => (
+            <Form
+              className='form-search'
+              onSubmit={(e) => this.searchRequest(e, client)}
+              // loading={loading}
+              // error
+            >
+              <Input
+                label={<Dropdown defaultValue='title' options={options} />}
+                labelPosition='right'
+                placeholder='Find movie'
+              />
 
-                {/* <Form.Field
-                  control={TextareaAutosize}
-                  className='title-view'
-                  name="title"
-                  readOnly={readOnly}
-                  disabled={loadingUpdate}
-                  defaultValue={searchblock.title}
+              <Form.Group>
+                <Form.Input
+                  fluid
+                  label="Year of release"
+                  id="year"
+                  name="year"
+                  // disabled={loading}
+                  width={8}
+                  // required
+                  // defaultValue={profileTP.name || ''}
+                  value={year}
                   onChange={this.handleChange}
-                /> */}
+                />
+                <Form.Input
+                  fluid
+                  label="Genre"
+                  name="genre"
+                  value={genre}
+                  width={8}
+                  // required
+                />
+              </Form.Group>
 
-                <Form.Group>
-                  <Form.Input
-                    fluid
-                    label="Year of release"
-                    id="year"
-                    name="year"
-                    // disabled={loading}
-                    width={8}
-                    // required
-                    // defaultValue={profileTP.name || ''}
-                    value={searchblock.year}
-                    onChange={this.handleChange}
-                  />
-                  <Form.Input
-                    fluid
-                    label="Genre"
-                    name="genre"
-                    value={searchblock.genre}
-                    width={8}
-                    // required
-                  />
-                </Form.Group>
+              <div className="list-meta"> </div>
 
-                <div className="list-meta">
-                  <p>div</p>
-                </div>
-
-                <Segment attached='bottom'>
-                  <Button
-                      type="submit"
-                      // loading={loading}
-                      fluid
-                      icon
-                      labelPosition="right"
-                    >
-                      Search
-                  </Button>
-                  {/* <Button
-                    onClick={() => this.search(searchItemQuery)}
-                    >
-                      Search
-                  </Button> */}
-                  <Button onClick={() => this.resetInput()}>Reset</Button>
-                </Segment>
-                {/*
-                  authorIsCurrentUser
-                  && <UpdateBlock updateProps={updateProps} /> */
-                }
-              </Form>
-            </Segment>
-            <Item.Group divided>
-              {
-                resultSearch.map((item) => (<ResultBlock item={item} />))
+              <Segment attached='bottom'>
+                <Button
+                    type="submit"
+                    // loading={loading}
+                    // fluid
+                    icon
+                    labelPosition="right"
+                  >
+                    Search
+                </Button>
+                {/* <Button
+                  onClick={() => this.search(searchItemQuery)}
+                  >
+                    Search
+                </Button> */}
+                <Button onClick={() => this.resetInput()}>Reset</Button>
+              </Segment>
+              {/*
+                authorIsCurrentUser
+                && <UpdateBlock updateProps={updateProps} /> */
               }
-            </Item.Group>
+            </Form>
+            )}
+              </ApolloConsumer>
+          </Segment>
+          <Item.Group divided>
+            {
+              resultSearch.map((item) => (<ResultBlock key={item.imdbID} item={item} />))
+            }
+          </Item.Group>
 
-          </RowDiv>
-        )
-      }
-      </Composed>
+        </RowDiv>
     );
   }
 }
 
-export default withUserContext(SearchBlock);
+export default SearchBlock;
