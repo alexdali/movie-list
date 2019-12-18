@@ -108,14 +108,14 @@ const createList = async (arg) => {
   });
   return list.save()
     .then((result) => {
-      console.log(`c createList SaveOne: ${JSON.stringify(result)}`);
+      console.log(`c createList result: ${JSON.stringify(result)}`);
       const newList = {
         id: result._id,
         title: result.title,
         userId: result.userId,
         description: result.description,
         numberOfItems: result.numberOfItems,
-        listAverageRating: result.listAverageRating,
+        userAverageRating: result.userAverageRating,
         createdDate: result.createdDate,
       };
       console.log(`c createList newList: ${JSON.stringify(newList)}`);
@@ -144,7 +144,7 @@ const createList = async (arg) => {
 //         userId: result.userId,
 //         description: result.description,
 //         numberOfItems: result.numberOfItems,
-//         listAverageRating: result.listAverageRating,
+//         userAverageRating: result.userAverageRating,
 //         createdDate: result.createdDate,
 //       };
 //       console.log(`c updateList updatedList: ${JSON.stringify(updatedList)}`);
@@ -226,11 +226,11 @@ const updateItem = async (arg) => {
 
 // update item in the lists
 const updateItemInLists = async (arg) => {
-  const { itemId: _id, lists, userRating } = arg;
+  const { itemId, lists, userRating } = arg;
   // update item's userRating
   // const userRatingItem = await Item.findById(_id, 'userRating');
   // if(userRatingItem !== userRating) {
-  const updatedItem = await updateItem(arg.itemId, userRating);
+  const updatedItem = await updateItem(itemId, userRating);
   if (updatedItem === null) throw new Error('Error db: error when updating Item');
   // }
   // iterate all lists in array
@@ -239,7 +239,7 @@ const updateItemInLists = async (arg) => {
     const updList = await List.update(
       { _id: list._id },
       // {"$push": { "items": _id } },
-      { $addToSet: { items: { $each: ['_id'] } } },
+      { $addToSet: { items: { $each: [itemId] } } },
       { new: true },
     )
       .then((result) =>
@@ -248,9 +248,10 @@ const updateItemInLists = async (arg) => {
           id: result._id,
           title: result.title,
           userId: result.userId,
-          // numberOfItems: result.numberOfItems,
-          listAverageRating: result.listAverageRating,
+          numberOfItems: result.numberOfItems,
+          userAverageRating: result.userAverageRating,
           description: result.description,
+          items: result.items,
           createdDate: result.createdDate,
         }))
       .catch((err) => console.error('Error db: ', err));
@@ -265,38 +266,38 @@ const removeItemFromList = async (arg) => {
   const { itemId: _id, listId } = arg;
   console.log(`c removeItemFromList arg: ${JSON.stringify(arg)}`);
   const updatedItem = await Item.update(
-      { _id: list._id},
-      { $pull: { lists: listId } },
-      { new: true }
-    )
+    { _id },
+    { $pull: { lists: listId } },
+    { new: true },
+  )
     .then((result) => {
-      if(result===null) throw new Error("Error db: error when updating Item");
+      if (result === null) throw new Error('Error db: error when updating Item');
       console.log(`c removeItemFromList Item.update: ${JSON.stringify(result)}`);
       return result;
     })
     .catch((err) => console.error('Error db: ', err));
-  
-    // update the list: remove the item from Items array
-    const updatedList = await List.update(
-      { _id: list._id },
-      { $pull: { items: updatedItem._id } },
-      { new: true },
-    )
-      .then((result) =>
-      // console.log(`c updateItemInLists List.update: ${JSON.stringify(result)}`);
-        ({
-          id: result._id,
-          title: result.title,
-          userId: result.userId,
-          // numberOfItems: result.numberOfItems,
-          items: result.items,
-          listAverageRating: result.listAverageRating,
-          description: result.description,
-          createdDate: result.createdDate,
-        }))
-      .catch((err) => console.error('Error db: ', err));
 
-    return updatedList;
+  // update the list: remove the item from Items array
+  const updatedList = await List.update(
+    { _id: listId },
+    { $pull: { items: updatedItem._id } },
+    { new: true },
+  )
+    .then((result) =>
+      // console.log(`c updateItemInLists List.update: ${JSON.stringify(result)}`);
+      ({
+        id: result._id,
+        title: result.title,
+        userId: result.userId,
+        // numberOfItems: result.numberOfItems,
+        items: result.items,
+        userAverageRating: result.userAverageRating,
+        description: result.description,
+        createdDate: result.createdDate,
+      }))
+    .catch((err) => console.error('Error db: ', err));
+
+  return updatedList;
 };
 
 

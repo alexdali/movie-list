@@ -14,7 +14,7 @@ const List = mongoose.model('List', new mongoose.Schema({
   _id: ObjectId,
   title: String,
   numberOfItems: Number,
-  listAverageRating: Number,
+  userAverageRating: Number,
   description: String,
   items: [{ type: ObjectId, ref: 'item' }],
   userId: String,

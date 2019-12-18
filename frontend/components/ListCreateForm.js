@@ -25,6 +25,8 @@ const CREATE_LIST_MUTATION = gql`
         title
         userId
         description
+        numberOfItems
+        userAverageRating
         createdDate
     }
   }

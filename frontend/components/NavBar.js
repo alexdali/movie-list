@@ -148,7 +148,7 @@ class NavBar extends Component {
                     >
                       <div className="MenuItem">
                         <Link href="#">
-                        <a>Войти</a>
+                        <a>SignIn</a>
                         </Link>
                       </div>
                     </Menu.Item>

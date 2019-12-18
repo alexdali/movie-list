@@ -2,7 +2,7 @@ import React from 'react';
 import { Query } from 'react-apollo';
 import gql from 'graphql-tag';
 import PropTypes from 'prop-types';
-import { Item, Segment, Icon, } from 'semantic-ui-react';
+import { Item, Segment, Icon } from 'semantic-ui-react';
 import withUserContext from '../lib/withUserContext';
 import ErrorMessage from './ErrorMessage';
 import ListCard from './ListCard';
@@ -45,7 +45,7 @@ const ListsByUser = (props) => {
         if ((typeof data === 'undefined') || (data.listsByUser.length === 0)) return null;
         return (
           <Item.Group divided relaxed='very'>
-            {data.lists.map((item) => {
+            {data.listsByUser.map((item) => {
               let author = authors.find((el) => el.id === item.userId);
               if (typeof author === 'undefined') {
                 author = {

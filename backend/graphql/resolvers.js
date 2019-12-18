@@ -74,8 +74,17 @@ const resolvers = {
     list: async (_, { id }) => {
       const resList = await getList(id);
       console.log(`query list id: ${id}`);
-      console.log(`query post resList: ${JSON.stringify(resList)}`);
+      console.log(`query list resList: ${JSON.stringify(resList)}`);
       const itemsByList = await getItemsByList({ listId: resList.id });
+      if (itemsByList.length !== 0) {
+        // const average = itemsByList.reduce((total, item, index, array) => {
+        //   total += item.userRating;
+        //   return total / array.length;
+        // }, 0);
+        // resList.userAverageRating = average;
+        const sumRating = itemsByList.reduce((sum, item) => sum + item.userRating, 0);
+        resList.userAverageRating = sumRating / itemsByList.length;
+      }
       console.log('q list itemsByList.length: ', itemsByList.length);
       return {
         ...resList,
@@ -85,9 +94,10 @@ const resolvers = {
     },
     lists: async () => {
       const lists = await getLists() || [];
-      // console.log(`q posts result getPosts: ${JSON.stringify(posts)}`);
+      // console.log(`q lists result getLists: ${JSON.stringify(lists)}`);
       if (lists === []) return lists;
       // sort by createdDate
+      console.log(`q lists result getLists: ${JSON.stringify(lists)}`);
       const sortLists = lists.sort((a, b) => {
         const res = b.createdDate - a.createdDate;
         // console.log(`q lists sort res b-a: ${res}`);
@@ -95,16 +105,27 @@ const resolvers = {
       }).map(async (resList) => {
         const itemsByList = await getItemsByList({ listId: resList.id });
         // console.log('q lists itemsByList.length: ', itemsByList.length);
+        if (itemsByList.length !== 0) {
+          // const average = itemsByList.reduce((total, item, index, array) => {
+          //   total += item.userRating;
+          //   return total / array.length;
+          // }, 0);
+          // resList.userAverageRating = average;
+          const sumRating = itemsByList.reduce((sum, item) => sum + item.userRating, 0);
+          resList.userAverageRating = sumRating / itemsByList.length;
+        }
         return {
           ...resList,
           numberOfItems: itemsByList.length,
           items: itemsByList,
         };
       });
+      console.log('q lists sortLists: ', sortLists);
       return sortLists;
     },
     listsByUser: async (_, { id }) => {
       const result = await getListsByUser({ userId: id });
+      // console.log('q listsByUser result: ', result);
       if (result === []) return result;
       const lists = result.sort((a, b) => {
         const res = b.createdDate - a.createdDate;
@@ -113,12 +134,17 @@ const resolvers = {
       }).map(async (resList) => {
         const itemsByList = await getItemsByList({ listId: resList.id });
         // console.log('q lists itemsByList.length: ', itemsByList.length);
+        if (itemsByList.length !== 0) {
+          const sumRating = itemsByList.reduce((sum, item) => sum + item.userRating, 0);
+          resList.userAverageRating = sumRating / itemsByList.length;
+        }
         return {
           ...resList,
           numberOfItems: itemsByList.length,
           items: itemsByList,
         };
       });
+      // console.log('q listsByUser lists: ', lists);
       return lists;
     },
 
@@ -157,6 +183,14 @@ const resolvers = {
     },
     // commentsByUser: async (_, { id }) => getCommentsByUser({ userId: id }),
     itemsByUser: async (_, { id }) => getItemsByUser({ userId: id }),
+    searchItem: async (parent, arg, context, info) => {
+      console.log(`q searchItem arg: ${JSON.stringify(arg)}`);
+      const temp = {
+        title: 'Terminator', year: '1991', rated: 'N/A', released: 'N/A', genre: 'Short, Action, Sci-Fi', director: 'Ben Hernandez', Writer: 'James Cameron (characters), James Cameron (concept), Ben Hernandez (screenplay)', actors: 'Loris Basso, James Callahan, Debbie Medows, Michelle Kovach', plot: 'A cyborg comes from the future, to kill a girl named Sarah Lee.', language: 'English', country: 'USA', imdbRating: '6.2', imdbVotes: '25', imdbID: 'tt5817168', type: 'movie',
+      };
+      // const tempObj = JSON.parse(temp);
+      return [temp];
+    },
   },
 
   Mutation: {
@@ -311,8 +345,9 @@ const resolvers = {
       const newListData = {
         title, userId, description, createdDate,
       };
-      console.log(`m createList newList: ${JSON.stringify(newListData)}`);
+      console.log(`m createList newListData: ${JSON.stringify(newListData)}`);
       const newList = await createList(newListData);
+      console.log(`m createList newList: ${JSON.stringify(newList)}`);
       return newList;
     },
     // add and remove Item, update UserRating in Lists
@@ -334,7 +369,7 @@ const resolvers = {
       if (id !== userId) {
         throw new Error('Вы не можете редактировать чужой список!');
       }
-      const dataRemoveItem = { itemId, listId, itemId };
+      const dataRemoveItem = { itemId, listId };
       console.log(`m removeItemFromList dataRemoveItem: ${JSON.stringify(dataRemoveItem)}`);
       const updatedList = await removeItemFromList(dataRemoveItem);
       return updatedList;

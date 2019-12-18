@@ -53,6 +53,23 @@ type Item {
   createdDate: DateTime!
 }
 
+type ItemDB {
+  imdbID: String!
+  title: String!
+  year: String!
+  rated: String!
+  released: String!
+  genre: String!
+  director: String!
+  actors: String!
+  language: String!
+  plot: String!
+  country: String!
+  imdbRating: String!
+  imdbVotes: String!
+  type: String!
+}
+
 #type Comment {
 #  id: String!
 #  userId: String!
@@ -71,6 +88,7 @@ type Query {
   listsByUser(id: String!): [List]!
   itemsByUser(id: String!): [Item]!
   itemsByList(id: String!): [Item]!
+  searchItem(title: String, itemId: String, year: String, genre: String): [ItemDB]!
 }
 
 type Mutation {

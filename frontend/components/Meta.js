@@ -10,7 +10,7 @@ const Meta = () => (
       rel="stylesheet"
       href="//cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css"
     />
-    <title>app_CRUD</title>
+    <title>movie-list-app</title>
   </Head>
 );
 

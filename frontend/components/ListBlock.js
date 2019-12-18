@@ -4,7 +4,7 @@ import { adopt } from 'react-adopt';
 import gql from 'graphql-tag';
 import PropTypes from 'prop-types';
 import {
-  Message, Segment, Button, Icon, Form, Rating,
+  Message, Segment, Button, Icon, Form, Rating, Item,
 } from 'semantic-ui-react';
 import TextareaAutosize from 'react-textarea-autosize';
 import Router from 'next/router';
@@ -33,6 +33,15 @@ const RowDiv = styled.div`
     font-weight: 600;
     padding: 1em 2em 0;
     border-bottom: 1px solid rgba(34, 36, 38, 0.15);
+  }
+  div.field.description-view > textarea {
+    width: 100%;
+    max-height: 100%;
+    font-size: 1.5em;
+    padding: 0.5em;
+    border: none;
+    border-bottom: 1px solid rgba(34, 36, 38, 0.15);
+    resize: none;
   }
   .ui.form > div.field.list-content > textarea {
     font-size: 1.5em;
@@ -144,7 +153,7 @@ const ListItem = (props) => {
   //   showEdit, enableEdit, updatePostItem, updateList, loadingUpdate, deletePostItem, deleteList,
   // } = props.updateProps;
   const {
-    updateListMutate, removeItemMutate, item
+    updateListMutate, removeItemMutate, item,
   } = props.itemProps;
   return (
           <Item>
@@ -289,24 +298,24 @@ class ListBlock extends Component {
     };
     const {
       listblock,
-      authorIsCurrentUser,
+      // authorIsCurrentUser,
       readOnly,
-      showEdit,
+      // showEdit,
     } = this.state;
     // const updateProps = {
     //   showEdit, enableEdit: this.enableEdit, updatePostItem: this.updatePostItem, deletePostItem: this.deletePostItem,
     // };
-    //const itemProps = {updateRatingItem, ListArray};
+    // const itemProps = {updateRatingItem, ListArray};
     return (
       <Composed>
       {({
         updateListMutate, deleteListMutate, removeItemMutate,
       }) => {
         const { loading: loadingUpdate, error: errorUpdate } = updateListMutate;
-        //itemProps.updateList = updateListMutate;
-        //itemProps.deleteList = deleteListMutate;
-        //itemProps.removeItem = removeItemMutate;
-        const itemProps = {removeItemMutate, updateListMutate};
+        // itemProps.updateList = updateListMutate;
+        // itemProps.deleteList = deleteListMutate;
+        // itemProps.removeItem = removeItemMutate;
+        const itemProps = { removeItemMutate, updateListMutate };
         if (errorUpdate) {
           return (
           <Message negative>
@@ -333,11 +342,26 @@ class ListBlock extends Component {
                 <p>{moment(listblock.createdDate).format('DD MMMM YYYY HH:mm')}</p>
               </div>
 
+              <div className="list-meta">
+                <p>Average Rating: {listblock.userAverageRating}</p>
+                <p>Number Of Items: {listblock.numberOfItems}</p>
+              </div>
+
+              <Form.Field
+                control={TextareaAutosize}
+                className='description-view'
+                name="description"
+                readOnly={readOnly}
+                disabled={loadingUpdate}
+                defaultValue={listblock.description}
+                onChange={this.handleChange}
+              />
+
               <Item.Group divided>
                 {
                   listblock.items.map((item) => {
                     itemProps.item = { ...item };
-                    //comment.author = { ...author };
+                    // comment.author = { ...author };
                     return (<ListItem key={item.id} {...itemProps}/>);
                   })
                 }

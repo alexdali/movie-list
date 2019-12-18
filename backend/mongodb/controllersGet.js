@@ -52,14 +52,15 @@ const getUsers = async () => User.find()
 const getLists = async () => List.find()
   .then((result) => {
     console.log(`c getLists find: ${JSON.stringify(result)}`);
-    result.map((list) => ({
+    return result.map((list) => ({
       id: list._id,
       title: list.title,
       userId: list.userId,
       description: list.description,
       items: list.items,
-      numberOfItems: list.numberOfItems,
-      listAverageRating: list.listAverageRating,
+      // numberOfItems: list.numberOfItems,
+      // numberOfItems: list.items.length,
+      userAverageRating: list.userAverageRating,
       createdDate: list.createdDate,
     }));
   })
@@ -75,8 +76,9 @@ const getList = async (arg) => List.findById(arg)
       userId: result.userId,
       description: result.description,
       items: result.items,
-      numberOfItems: result.numberOfItems,
-      listAverageRating: result.listAverageRating,
+      // numberOfItems: result.numberOfItems,
+      // numberOfItems: result.items.length,
+      userAverageRating: result.userAverageRating,
       createdDate: result.createdDate,
     });
   })
@@ -99,17 +101,18 @@ const getList = async (arg) => List.findById(arg)
 
 // Get all lists by User
 const getListsByUser = async (arg) => List.find({ userId: arg.userId })
-  .then((result) =>
-  // console.log(`c getPostsByUser find: ${JSON.stringify(result)}`);
-    result.map((list) => ({
+  .then((result) => {
+    console.log(`c getListsByUser find: ${JSON.stringify(result)}`);
+    return result.map((list) => ({
       id: list._id,
       title: list.title,
       userId: list.userId,
       items: list.items,
-      listAverageRating: list.listAverageRating,
+      userAverageRating: list.userAverageRating,
       description: list.description,
       createdDate: list.createdDate,
-    })))
+    }));
+  })
   .catch((err) => console.error('Error db: ', err));
 
 // // Get all comments by List
