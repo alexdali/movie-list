@@ -1,6 +1,7 @@
 // import uuidv4 from 'uuid/v4';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import fetch from 'cross-fetch';
 import {
   GraphQLDate,
   GraphQLTime,
@@ -14,6 +15,8 @@ import {
 import {
   createUser, updatePassword, deleteUser, createList, updateItemInLists, removeItemFromList, updateItem, deleteItem,
 } from '../mongodb/controllersSet';
+
+require('dotenv').config({ path: 'variables.env' });
 
 /* eslint no-underscore-dangle: [1, { "allow": ["__id"] }] */
 
@@ -185,11 +188,55 @@ const resolvers = {
     itemsByUser: async (_, { id }) => getItemsByUser({ userId: id }),
     searchItem: async (parent, arg, context, info) => {
       console.log(`q searchItem arg: ${JSON.stringify(arg)}`);
-      const temp = {
-        title: 'Terminator', year: '1991', rated: 'N/A', released: 'N/A', genre: 'Short, Action, Sci-Fi', director: 'Ben Hernandez', Writer: 'James Cameron (characters), James Cameron (concept), Ben Hernandez (screenplay)', actors: 'Loris Basso, James Callahan, Debbie Medows, Michelle Kovach', plot: 'A cyborg comes from the future, to kill a girl named Sarah Lee.', language: 'English', country: 'USA', imdbRating: '6.2', imdbVotes: '25', imdbID: 'tt5817168', type: 'movie',
-      };
-      // const tempObj = JSON.parse(temp);
-      return [temp];
+      const {
+        title, imdbID, year, genre,
+      } = arg;
+      // http://www.omdbapi.com/?i=tt3896198&apikey=*******
+      // http://www.omdbapi.com/?t=Game of Thrones&Season=1&Episode=1
+      const apiKey = process.env.OMDB_KEY;
+      const apiUrl = process.env.OMDB_URL;
+      const reqParams = imdbID === '' ? `t=${title}` : `i=${imdbID}`;
+      const url = `${apiUrl}?${reqParams}&apikey=${apiKey}`;
+      console.log(`q searchItem url: ${url}`);
+      // data.append('file', files[0]);
+      // data.append('upload_preset', 'sickfits');
+      const resArray = [];
+      const res = await fetch(url)
+        .then((response) => {
+          if (response.status >= 400) {
+            throw new Error('Bad response from server');
+          }
+          return response.json();
+        }) // .then((response) => response.json())
+        .then((result) => {
+          console.log(`q searchItem fetch API result: ${JSON.stringify(result)}`);
+          // console.log(`q searchItem fetch API result.Title: ${result.Title}`);
+          return {
+            imdbID: result.imdbID,
+            title: result.Title,
+            year: result.Year,
+            rated: result.Rated,
+            released: result.Released,
+            genre: result.Genre,
+            director: result.Director,
+            actors: result.Actors,
+            language: result.Language,
+            plot: result.Plot,
+            country: result.Country,
+            imdbRating: result.imdbRating,
+            imdbVotes: result.imdbVotes,
+            type: result.Type,
+          };
+          // return result;
+        })
+        .catch((err) => console.error('Error API: ', err));
+      resArray.push(res);
+      console.log(`q searchItem fetch API resArray: ${resArray}`);
+      // const temp = {
+      //   title: 'Terminator', year: '1991', rated: 'N/A', released: 'N/A', genre: 'Short, Action, Sci-Fi', director: 'Ben Hernandez', Writer: 'James Cameron (characters), James Cameron (concept), Ben Hernandez (screenplay)', actors: 'Loris Basso, James Callahan, Debbie Medows, Michelle Kovach', plot: 'A cyborg comes from the future, to kill a girl named Sarah Lee.', language: 'English', country: 'USA', imdbRating: '6.2', imdbVotes: '25', imdbID: 'tt5817168', type: 'movie',
+      // };
+      // JSON.parse(temp);
+      return resArray;
     },
   },
 

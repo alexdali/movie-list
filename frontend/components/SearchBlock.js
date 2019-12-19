@@ -107,9 +107,9 @@ const ResultBlock = (props) => {
                   <span className='cinema'>{item.language || ''}</span>
                   <span className='cinema'>{item.rated || ''}</span>
                 </Item.Meta>
-                <Item.Description>{item.plot || ''}</Item.Description>
-                <Item.Description>{item.director || ''}</Item.Description>
-                <Item.Description>{item.actors || ''}</Item.Description>
+                <Item.Description>Plot: {item.plot || ''}</Item.Description>
+                <Item.Description>Director: {item.director || ''}</Item.Description>
+                <Item.Description>Actors: {item.actors || ''}</Item.Description>
                 <Item.Extra>
                   <Button floated='right'>
                     Add to list
@@ -150,6 +150,10 @@ class SearchBlock extends Component {
     // searchblock: this.props.searchblock,
     // authorIsCurrentUser: false,
     // readOnly: false,
+    firstParamText: 'by Title',
+    firstParamName: 'title',
+    searchByID: false,
+    firstParamVal: '',
     searchblock: {
       title: '',
       imdbID: '',
@@ -179,25 +183,80 @@ class SearchBlock extends Component {
 
   resetInput = () => {
     this.setState({
-      // showEdit: '',
-      // readOnly: true,
+      firstParamText: 'by Title',
+      firstParamName: 'title',
+      searchByID: false,
+      firstParamVal: '',
       searchblock: {
+        // firstParamVal: '',
         title: '',
         imdbID: '',
         year: '',
         genre: '',
       },
+      // showEdit: '',
+      resultSearch: [],
     });
   }
 
-  handleChange = (e, data) => {
+  handleChange = (e, {
+    value, name, type, id,
+  }) => {
+    // console.log(`handleChange data: ${JSON.stringify(data)}`);
+    console.log(`handleChange value: ${value}, name: ${name}`);
+    console.log(`handleChange id: ${id}, type: ${type}`);
     // const { name, type, value } = e.target;
-    // const val = value;
-    // const nam = name;
 
+    const val = value;
+    let nam = name;
+    if (nam === undefined) {
+      nam = 'imdbID';
+      // searchblock[imdbID] = val;
+      // this.setState({
+      //   searchblock.imdbID: val,
+      // });
+    }
+    if (id === 'firstParam') {
+      this.setState({
+        firstParamVal: val,
+      });
+    }
+
+    const { searchblock } = this.state;
+    // if (searchblock.searchByID && nam === undefined) {
+    searchblock[nam] = val;
+    this.setState({ searchblock });
+  };
+
+  handleItemClick = (e, data) => {
+    // console.log('NavBar handleItemClick: e', e);
+    console.log('handleItemClick data: ', data);
+    const { name, value, text } = data;
+    console.log('handleItemClick: value: ', value);
+    this.setState({
+      firstParamText: text,
+      firstParamName: value,
+    });
+    if (value === 'imdbID') {
+      this.setState({
+        searchByID: true,
+      });
+    }
     // const { searchblock } = this.state;
     // searchblock[nam] = val;
     // this.setState({ searchblock });
+    // firstParam: 'title',
+    // if (name === 'title') {
+    //   console.log('handleItemClick: value: ', value);
+    //   this.setState({
+    //     signinModal: true,
+    //   });
+    // }
+    // if (name === 'imdbID') {
+    //   Router.push({
+    //     pathname: '/categorytplist',
+    //   });
+    // }
   };
 
   searchRequest = async (e, client) => {
@@ -222,17 +281,20 @@ class SearchBlock extends Component {
         title, imdbID, year, genre,
       },
     });
-    console.log(`q searchItem res: ${res.data}`);
+    console.log(`q searchItem res.data.searchItem: ${JSON.stringify(res.data.searchItem)}`);
     // TO-DO handle key press: Enter
     this.setState({
-      // showEdit: '',
-      // readOnly: true,
+      firstParamText: 'by Title',
+      firstParamName: 'title',
+      searchByID: false,
+      firstParamVal: '',
       searchblock: {
         title: '',
         imdbID: '',
         year: '',
         genre: '',
       },
+      // showEdit: '',
       resultSearch: res.data.searchItem,
     });
   };
@@ -241,14 +303,20 @@ class SearchBlock extends Component {
   render() {
     // const { client } = this.props;
     const options = [
-      { key: 'title', text: 'title', value: 'title' },
-      { key: 'ID', text: 'ID', value: 'imdbID' },
+      {
+        key: 'title', text: 'by Title', name: 'title', value: 'title', onClick: this.handleItemClick,
+      },
+      {
+        key: 'ID', text: 'by ID', name: 'imdbID', value: 'imdbID', onClick: this.handleItemClick,
+      },
     ];
     const {
       searchblock: {
         title, itemId, year, genre,
       },
-      // authorIsCurrentUser,
+      firstParamText,
+      firstParamName,
+      firstParamVal,
       // readOnly,
       // showEdit,
       resultSearch,
@@ -260,15 +328,20 @@ class SearchBlock extends Component {
           <ApolloConsumer>
             {(client) => (
             <Form
-              className='form-search'
-              onSubmit={(e) => this.searchRequest(e, client)}
+              // className='form-search'
+              // onSubmit={(e) => this.searchRequest(e, client)}
               // loading={loading}
               // error
             >
               <Input
-                label={<Dropdown defaultValue='title' options={options} />}
+                // label={<Dropdown defaultValue='title' options={options} />}
+                label={<Dropdown text={firstParamText} options={options} />}
+                id="firstParam"
+                name={firstParamName}
+                value={firstParamVal}
                 labelPosition='right'
                 placeholder='Find movie'
+                onChange={this.handleChange}
               />
 
               <Form.Group>
@@ -291,13 +364,14 @@ class SearchBlock extends Component {
                   value={genre}
                   width={8}
                   // required
+                  onChange={this.handleChange}
                 />
               </Form.Group>
 
               <div className="list-meta"> </div>
 
               <Segment attached='bottom'>
-                <Button
+                {/* <Button
                     type="submit"
                     // loading={loading}
                     // fluid
@@ -305,12 +379,13 @@ class SearchBlock extends Component {
                     labelPosition="right"
                   >
                     Search
-                </Button>
-                {/* <Button
-                  onClick={() => this.search(searchItemQuery)}
-                  >
-                    Search
                 </Button> */}
+                <Button
+                // labelPosition="right"
+                onClick={(e) => this.searchRequest(e, client)}
+                >
+                    Search
+                </Button>
                 <Button onClick={() => this.resetInput()}>Reset</Button>
               </Segment>
               {/*
