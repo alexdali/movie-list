@@ -15,7 +15,7 @@ import styled from 'styled-components';
 import withUserContext from '../lib/withUserContext';
 // import { ALL_LISTS_QUERY } from './RatingList';
 // import { CURRENT_USER_QUERY } from './User';
-import ResultBlock from './ResultBlock';
+import AddToListBlock from './AddToListBlock';
 
 
 const RowDiv = styled.div`
@@ -54,36 +54,36 @@ const RowDiv = styled.div`
 `;
 
 
-const SEARCH_ITEM_QUERY = gql`
-  query SEARCH_ITEM_QUERY(
-    $title: String
-    $imdbID: String
-    $year: String
-    $genre: String
-  ) {
-    searchItem(
-      title: $title
-      imdbID: $imdbID
-      year: $year
-      genre: $genre
-      ) {
-        imdbID
-        title
-        year
-        rated
-        released
-        genre
-        director
-        actors
-        language
-        plot
-        country
-        imdbRating
-        imdbVotes
-        type
-    }
-  }
-`;
+// const SEARCH_ITEM_QUERY = gql`
+//   query SEARCH_ITEM_QUERY(
+//     $title: String
+//     $imdbID: String
+//     $year: String
+//     $genre: String
+//   ) {
+//     searchItem(
+//       title: $title
+//       imdbID: $imdbID
+//       year: $year
+//       genre: $genre
+//       ) {
+//         imdbID
+//         title
+//         year
+//         rated
+//         released
+//         genre
+//         director
+//         actors
+//         language
+//         plot
+//         country
+//         imdbRating
+//         imdbVotes
+//         type
+//     }
+//   }
+// `;
 
 // const ResultBlock = (props) => {
 //   const { item } = props;
@@ -129,7 +129,7 @@ const SEARCH_ITEM_QUERY = gql`
 // });
 /* eslint-enable */
 
-class SearchBlock extends Component {
+class ResultBlock extends Component {
   // static propTypes = {
   //   searchblock: PropTypes.shape({
   //     id: PropTypes.string,
@@ -178,23 +178,23 @@ class SearchBlock extends Component {
   //   }
   // };
 
-  resetInput = () => {
-    this.setState({
-      firstParamText: 'by Title',
-      firstParamName: 'title',
-      searchByID: false,
-      firstParamVal: '',
-      searchblock: {
-        // firstParamVal: '',
-        title: '',
-        imdbID: '',
-        year: '',
-        genre: '',
-      },
-      // showEdit: '',
-      resultSearch: [],
-    });
-  }
+  // resetInput = () => {
+  //   this.setState({
+  //     firstParamText: 'by Title',
+  //     firstParamName: 'title',
+  //     searchByID: false,
+  //     firstParamVal: '',
+  //     searchblock: {
+  //       // firstParamVal: '',
+  //       title: '',
+  //       imdbID: '',
+  //       year: '',
+  //       genre: '',
+  //     },
+  //     // showEdit: '',
+  //     resultSearch: [],
+  //   });
+  // }
 
   handleChange = (e, {
     value, name, type, id,
@@ -217,63 +217,55 @@ class SearchBlock extends Component {
     this.setState({ searchblock });
   };
 
-  handleItemClick = (e, data) => {
-    // console.log('NavBar handleItemClick: e', e);
-    // console.log('handleItemClick data: ', data);
-    const { name, value, text } = data;
-    // console.log('handleItemClick: value: ', value);
-    this.setState({
-      firstParamText: text,
-      firstParamName: value,
-    });
-    if (value === 'imdbID') {
-      this.setState({
-        searchByID: true,
-      });
-    }
-  };
+  // handleItemClick = (e, data) => {
+  //   // console.log('NavBar handleItemClick: e', e);
+  //   // console.log('handleItemClick data: ', data);
+  //   const { name, value, text } = data;
+  //   // console.log('handleItemClick: value: ', value);
+  //   this.setState({
+  //     firstParamText: text,
+  //     firstParamName: value,
+  //   });
+  //   if (value === 'imdbID') {
+  //     this.setState({
+  //       searchByID: true,
+  //     });
+  //   }
+  // };
 
-  searchRequest = async (e, client) => {
-    e.preventDefault();
-    const {
-      title, imdbID, year, genre,
-    } = this.state.searchblock;
+  // searchRequest = async (e, client) => {
+  //   e.preventDefault();
+  //   const {
+  //     title, imdbID, year, genre,
+  //   } = this.state.searchblock;
 
-    const res = await client.query({
-      query: SEARCH_ITEM_QUERY,
-      variables: {
-        title, imdbID, year, genre,
-      },
-    });
-    console.log(`q searchItem res.data.searchItem: ${JSON.stringify(res.data.searchItem)}`);
-    // TO-DO handle key press: Enter
-    this.setState({
-      firstParamText: 'by Title',
-      firstParamName: 'title',
-      searchByID: false,
-      firstParamVal: '',
-      searchblock: {
-        title: '',
-        imdbID: '',
-        year: '',
-        genre: '',
-      },
-      // showEdit: '',
-      resultSearch: res.data.searchItem,
-    });
-  };
+  //   const res = await client.query({
+  //     query: SEARCH_ITEM_QUERY,
+  //     variables: {
+  //       title, imdbID, year, genre,
+  //     },
+  //   });
+  //   console.log(`q searchItem res.data.searchItem: ${JSON.stringify(res.data.searchItem)}`);
+  //   // TO-DO handle key press: Enter
+  //   this.setState({
+  //     firstParamText: 'by Title',
+  //     firstParamName: 'title',
+  //     searchByID: false,
+  //     firstParamVal: '',
+  //     searchblock: {
+  //       title: '',
+  //       imdbID: '',
+  //       year: '',
+  //       genre: '',
+  //     },
+  //     // showEdit: '',
+  //     resultSearch: res.data.searchItem,
+  //   });
+  // };
 
 
   render() {
-    // const { client } = this.props;
-    const options = [
-      {
-        key: 'title', text: 'by Title', name: 'title', value: 'title', onClick: this.handleItemClick,
-      },
-      {
-        key: 'ID', text: 'by ID', name: 'imdbID', value: 'imdbID', onClick: this.handleItemClick,
-      },
-    ];
+    const { item } = this.props;
     const {
       searchblock: {
         title, itemId, year, genre,
@@ -289,86 +281,63 @@ class SearchBlock extends Component {
     return (
         <RowDiv>
           <Segment>
-          <ApolloConsumer>
-            {(client) => (
-            <Form
-              // className='form-search'
-              // onSubmit={(e) => this.searchRequest(e, client)}
-              // loading={loading}
-              // error
-            >
-              <Input
-                // label={<Dropdown defaultValue='title' options={options} />}
-                label={<Dropdown text={firstParamText} options={options} />}
-                id="firstParam"
-                name={firstParamName}
-                value={firstParamVal}
-                labelPosition='right'
-                placeholder='Find movie'
-                onChange={this.handleChange}
-              />
+            <ApolloConsumer>
+              {(client) => (
+                // <Form
+                // className='form-search'
+                // onSubmit={(e) => this.searchRequest(e, client)}
+                // loading={loading}
+                // error
+                // >
+                <Item.Group divided>
+                  <Segment>
+                    <Item>
+                      {/* <Item.Image src='https://react.semantic-ui.com/images/wireframe/image.png' /> */}
+                      <Item.Content>
+                        <Item.Header as='h3'>{item.title}</Item.Header>
+                        <Item.Meta>
+                          <span className='cinema'>{item.year || ''}</span>
+                          <span className='cinema'>{item.released || ''}</span>
+                          <span className='cinema'>{item.genre || ''}</span>
+                          <span className='cinema'>{item.imdbRating || ''}</span>
+                          <span className='cinema'>{item.imdbVotes || ''}</span>
+                          <span className='cinema'>{item.type || ''}</span>
+                          <span className='cinema'>{item.country || ''}</span>
+                          <span className='cinema'>{item.language || ''}</span>
+                          <span className='cinema'>{item.rated || ''}</span>
+                        </Item.Meta>
+                        <Item.Description>Plot: {item.plot || ''}</Item.Description>
+                        <Item.Description>Director: {item.director || ''}</Item.Description>
+                        <Item.Description>Actors: {item.actors || ''}</Item.Description>
+                        <Item.Extra>
+                          <Button floated='right'>
+                            Add to list
+                            <Icon name='right chevron' />
+                          </Button>
+                          <Rating icon='star' defaultRating={5} maxRating={10} />
+                        </Item.Extra>
 
-              <Form.Group>
-                <Form.Input
-                  fluid
-                  label="Year of release"
-                  id="year"
-                  name="year"
-                  // disabled={loading}
-                  width={8}
-                  // required
-                  // defaultValue={profileTP.name || ''}
-                  value={year}
-                  onChange={this.handleChange}
-                />
-                <Form.Input
-                  fluid
-                  label="Genre"
-                  name="genre"
-                  value={genre}
-                  width={8}
-                  // required
-                  onChange={this.handleChange}
-                />
-              </Form.Group>
+                      </Item.Content>
+                    </Item>
+                  </Segment>
 
-              <div className="list-meta"> </div>
-
-              <Segment attached='bottom'>
-                {/* <Button
-                    type="submit"
-                    // loading={loading}
-                    // fluid
-                    icon
-                    labelPosition="right"
-                  >
-                    Search
-                </Button> */}
-                <Button
-                // labelPosition="right"
-                onClick={(e) => this.searchRequest(e, client)}
-                >
-                    Search
-                </Button>
-                <Button onClick={() => this.resetInput()}>Reset</Button>
-              </Segment>
-              {/*
-                authorIsCurrentUser
-                && <UpdateBlock updateProps={updateProps} /> */
-              }
-            </Form>
-            )}
-              </ApolloConsumer>
+                  {/* <Segment attached='bottom'>
+                    <Button
+                    onClick={(e) => this.searchRequest(e, client)}
+                    >
+                        Search
+                    </Button>
+                    <Button onClick={() => this.resetInput()}>Reset</Button>
+                  </Segment> */}
+                  {/* </Form> */}
+                </Item.Group>
+              )}
+                </ApolloConsumer>
           </Segment>
-          <Item.Group divided>
-            {
-              resultSearch.map((item) => (<ResultBlock key={item.imdbID} item={item} />))
-            }
-          </Item.Group>
-
+          <AddToListBlock/>
         </RowDiv>
     );
   }
 }
 
-export default SearchBlock;
+export default ResultBlock;
