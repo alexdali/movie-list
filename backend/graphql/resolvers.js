@@ -137,15 +137,28 @@ const resolvers = {
       }).map(async (resList) => {
         const itemsByList = await getItemsByList({ listId: resList.id });
         // console.log('q lists itemsByList.length: ', itemsByList.length);
-        if (itemsByList.length !== 0) {
-          const sumRating = itemsByList.reduce((sum, item) => sum + item.userRating, 0);
-          resList.userAverageRating = sumRating / itemsByList.length;
-        }
-        return {
-          ...resList,
-          numberOfItems: itemsByList.length,
-          items: itemsByList,
-        };
+        // if (itemsByList.length !== 0) {
+        //   const sumRating = itemsByList.reduce((sum, item) => sum + item.userRating, 0);
+        //   resList.userAverageRating = sumRating / itemsByList.length;
+        // }
+        // check, if itemsByList.length = 0!
+        const sumRating = itemsByList.length !== 0 ? itemsByList.reduce((sum, item) => sum + item.userRating, 0) : 0;
+        console.log('q itemsByList sumRating: ', sumRating);
+        console.log('q itemsByList itemsByList.length: ', itemsByList.length);
+        console.log('q itemsByList sumRating / itemsByList.length: ', sumRating / itemsByList.length);
+        const fullList = { ...resList };
+        fullList.userAverageRating = sumRating === 0 ? 0 : sumRating / itemsByList.length;
+        fullList.numberOfItems = itemsByList.length;
+        fullList.items = itemsByList;
+        // return {
+        //   ...resList,
+        //   numberOfItems: itemsByList.length,
+        //   items: itemsByList,
+        // };
+        // console.log('q itemsByList resList.userAverageRating: ', resList.userAverageRating);
+        console.log('q itemsByList fullList.items: ', fullList.items);
+        console.log('q itemsByList fullList.userAverageRating: ', fullList.userAverageRating);
+        return fullList;
       });
       // console.log('q listsByUser lists: ', lists);
       return lists;

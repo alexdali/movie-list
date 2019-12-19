@@ -19,6 +19,20 @@ const LISTS_BY_USER_QUERY = gql`
       numberOfItems
       userAverageRating
       createdDate
+      items {
+        id
+        userId
+        list {
+          id
+        }
+        title
+        yearOfRelease
+        genre
+        plotShort
+        userRating
+        comment
+        createdDate
+      }
     }
   }
 `;

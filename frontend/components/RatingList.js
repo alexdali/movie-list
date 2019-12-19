@@ -3,7 +3,9 @@ import { Query } from 'react-apollo';
 import gql from 'graphql-tag';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { Item, Segment } from 'semantic-ui-react';
+import {
+  Item, Segment, Header, Divider, Icon,
+} from 'semantic-ui-react';
 import withUserContext from '../lib/withUserContext';
 import LoadingBar from './LoadingBar';
 import ListCard from './ListCard';
@@ -25,7 +27,7 @@ const ALL_LISTS_QUERY = gql`
 `;
 
 const RowDiv = styled.div`
-  margin: 52px 0 0;
+  /* margin: 52px 0 0; */
 `;
 
 
@@ -42,6 +44,11 @@ const RatingList = (props) => {
           if ((typeof data === 'undefined') || (data.lists.length === 0)) return null;
           return (
             <Item.Group divided relaxed='very'>
+              <Header>
+                {/* <Icon name='search' /> */}
+                User lists and ratings
+              </Header>
+              <Divider hidden />
               {data.lists.map((item) => {
                 let author = authors.find((el) => el.id === item.userId);
                 if (typeof author === 'undefined') {

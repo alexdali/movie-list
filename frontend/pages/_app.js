@@ -26,7 +26,7 @@ class MyApp extends App {
   state = {
     user: null,
     authors: null,
-    listsByUser: null,
+    // listsByUser: null,
   };
 
   subscriptionUser() {
@@ -41,19 +41,19 @@ class MyApp extends App {
     });
   }
 
-  subscriptionUserLists() {
-    const id = this.state.user !== null ? this.state.user.id : '';
-    return client.watchQuery({
-      query: LISTS_BY_USER_QUERY,
-      variables: { id },
-    }).subscribe({
-      next: ({ data }) => {
-        console.log('_app componentDidMount queryUserListsSubscription data: ', data);
-        if (data.listsByUser !== 'undefined') { this.setState({ listsByUser: data.listsByUser }); }
-      },
-      error: (e) => console.error(e),
-    });
-  }
+  // subscriptionUserLists() {
+  //   const id = this.state.user !== null ? this.state.user.id : '';
+  //   return client.watchQuery({
+  //     query: LISTS_BY_USER_QUERY,
+  //     variables: { id },
+  //   }).subscribe({
+  //     next: ({ data }) => {
+  //       console.log('_app componentDidMount queryUserListsSubscription data: ', data);
+  //       if (data.listsByUser !== 'undefined') { this.setState({ listsByUser: data.listsByUser }); }
+  //     },
+  //     error: (e) => console.error(e),
+  //   });
+  // }
 
   subscriptionAuthors() {
     return client.watchQuery({
@@ -91,11 +91,11 @@ class MyApp extends App {
       numberOfItems: 0,
     };
     const authors = this.state.authors ? this.state.authors : [];
-    const listsByUser = this.state.listsByUser ? this.state.listsByUser : [];
+    // const listsByUser = this.state.listsByUser ? this.state.listsByUser : [];
     return (
     <ErrorBoundary>
         <ApolloProvider client={client}>
-          <UserContext.Provider value={{ user, authors, listsByUser }}>
+          <UserContext.Provider value={{ user, authors }}>
             <Page>
               <Component {...pageProps}/>
             </Page>

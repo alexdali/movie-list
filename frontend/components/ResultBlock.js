@@ -145,18 +145,18 @@ class ResultBlock extends Component {
 
   state = {
     // searchblock: this.props.searchblock,
-    // authorIsCurrentUser: false,
+    addToListShow: false,
     // readOnly: false,
-    firstParamText: 'by Title',
-    firstParamName: 'title',
-    searchByID: false,
-    firstParamVal: '',
-    searchblock: {
-      title: '',
-      imdbID: '',
-      year: '',
-      genre: '',
-    },
+    // firstParamText: 'by Title',
+    // firstParamName: 'title',
+    // searchByID: false,
+    // firstParamVal: '',
+    // searchblock: {
+    //   title: '',
+    //   imdbID: '',
+    //   year: '',
+    //   genre: '',
+    // },
     // showEdit: '',
     resultSearch: [],
   };
@@ -217,21 +217,9 @@ class ResultBlock extends Component {
     this.setState({ searchblock });
   };
 
-  // handleItemClick = (e, data) => {
-  //   // console.log('NavBar handleItemClick: e', e);
-  //   // console.log('handleItemClick data: ', data);
-  //   const { name, value, text } = data;
-  //   // console.log('handleItemClick: value: ', value);
-  //   this.setState({
-  //     firstParamText: text,
-  //     firstParamName: value,
-  //   });
-  //   if (value === 'imdbID') {
-  //     this.setState({
-  //       searchByID: true,
-  //     });
-  //   }
-  // };
+  addToListShow = (e, data) => {
+    this.setState({ addToListShow: true });
+  };
 
   // searchRequest = async (e, client) => {
   //   e.preventDefault();
@@ -267,20 +255,20 @@ class ResultBlock extends Component {
   render() {
     const { item } = this.props;
     const {
-      searchblock: {
-        title, itemId, year, genre,
-      },
-      firstParamText,
-      firstParamName,
-      firstParamVal,
-      // readOnly,
-      // showEdit,
-      resultSearch,
+      // searchblock: {
+      //   title, itemId, year, genre,
+      // },
+      addToListShow,
+      // firstParamName,
+      // firstParamVal,
+      // // readOnly,
+      // // showEdit,
+      // resultSearch,
     } = this.state;
 
     return (
-        <RowDiv>
-          <Segment>
+    // <RowDiv>
+    // <Segment>
             <ApolloConsumer>
               {(client) => (
                 // <Form
@@ -309,13 +297,21 @@ class ResultBlock extends Component {
                         <Item.Description>Plot: {item.plot || ''}</Item.Description>
                         <Item.Description>Director: {item.director || ''}</Item.Description>
                         <Item.Description>Actors: {item.actors || ''}</Item.Description>
-                        <Item.Extra>
-                          <Button floated='right'>
-                            Add to list
-                            <Icon name='right chevron' />
-                          </Button>
-                          <Rating icon='star' defaultRating={5} maxRating={10} />
-                        </Item.Extra>
+                        {
+                          !addToListShow
+                            ? <>
+                              <Item.Extra>
+                                <Button
+                                  floated='right'
+                                  onClick={(e) => this.addToListShow(e)}
+                                >
+                                  Add to list
+                                  <Icon name='right chevron' />
+                                </Button>
+                              </Item.Extra>
+                            </>
+                            : <AddToListBlock/>
+                        }
 
                       </Item.Content>
                     </Item>
@@ -333,9 +329,9 @@ class ResultBlock extends Component {
                 </Item.Group>
               )}
                 </ApolloConsumer>
-          </Segment>
-          <AddToListBlock/>
-        </RowDiv>
+    // </Segment>
+
+    // </RowDiv>
     );
   }
 }
