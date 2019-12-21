@@ -117,6 +117,24 @@ const getListsByUser = async (arg) => List.find({ userId: arg.userId })
   })
   .catch((err) => console.error('Error db: ', err));
 
+// Get all lists by User
+const getListsByItem = async (arg) => List.find({ items: arg.itemId })
+  .then((result) => {
+    console.log(`c getListsByItem find: ${JSON.stringify(result)}`);
+    return result.map((list) => ({
+      id: list._id,
+      title: list.title,
+      userId: list.userId,
+      items: list.items,
+      numberOfItems: list.numberOfItems,
+      userAverageRating: list.userAverageRating,
+      description: list.description,
+      createdDate: list.createdDate,
+    }));
+  })
+  .catch((err) => console.error('Error db: ', err))
+;
+
 // // Get all comments by List
 // const getCommentsByList = async (arg) => {
 //   const { listId } = arg;
@@ -139,7 +157,6 @@ const getListsByUser = async (arg) => List.find({ userId: arg.userId })
 const getItemsByList = async (arg) => {
   const { listId } = arg;
   console.log(`c getItemsByList listId: ${JSON.stringify(listId)}`);
-  // return Item.find({ listId })
   return Item.find({ lists: listId })
     .then((result) => {
       console.log(`c getItemsByList find result: ${JSON.stringify(result)}`);
@@ -161,18 +178,6 @@ const getItemsByList = async (arg) => {
     .catch((err) => console.error('Error db: ', err));
 };
 
-// const getCommentsByUser = async (arg) => Comment.find({ userId: arg.userId })
-//   .then((result) => {
-//     console.log(`c getCommentsByUser find: ${JSON.stringify(result)}`);
-//     return result.map((comment) => ({
-//       id: comment._id,
-//       userId: comment.userId,
-//       listId: comment.postId,
-//       content: comment.content,
-//       createdDate: comment.createdDate,
-//     }));
-//   })
-//   .catch((err) => console.error('Error db: ', err));
 const getItemsByUser = async (arg) => Item.find({ userId: arg.userId })
   .then((result) => {
     console.log(`c getItemsByUser find: ${JSON.stringify(result)}`);
@@ -207,6 +212,19 @@ const getDataByUser = async (arg) => {
   }
 };
 
+// const getCommentsByUser = async (arg) => Comment.find({ userId: arg.userId })
+//   .then((result) => {
+//     console.log(`c getCommentsByUser find: ${JSON.stringify(result)}`);
+//     return result.map((comment) => ({
+//       id: comment._id,
+//       userId: comment.userId,
+//       listId: comment.postId,
+//       content: comment.content,
+//       createdDate: comment.createdDate,
+//     }));
+//   })
+//   .catch((err) => console.error('Error db: ', err));
+
 export {
-  getUsers, getUser, getUserByArg, getLists, getList, getListsByUser, getItemsByList, getItemsByUser, getDataByUser,
+  getUsers, getUser, getUserByArg, getLists, getList, getListsByUser, getListsByItem, getItemsByList, getItemsByUser, getDataByUser,
 };

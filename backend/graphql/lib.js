@@ -34,6 +34,27 @@ const updateListByTypedef = async (list) => {
   return updatedList;
 };
 
+const updateItemByTypedef = async (item) => {
+  console.log(`lib updateItemByTypedef item: ${JSON.stringify(item)}`);
+  const itemListsArr = item.lists.map((el) => ({ id: el }));
+
+  const updatedItem = {
+    id: item.id,
+    userId: item.userId,
+    lists: itemListsArr,
+    title: item.title,
+    yearOfRelease: item.yearOfRelease,
+    genre: item.genre,
+    // plotShort: item.plotShort,
+    userRating: item.userRating,
+    // comment: item.comment,
+    createdDate: item.createdDate,
+  };
+  console.log(`lib updateItemByTypedef updatedItem: ${JSON.stringify(updatedItem)}`);
+  return updatedItem;
+};
+
+
 export {
-  getUserAverageRating, updateListByTypedef,
+  getUserAverageRating, updateListByTypedef, updateItemByTypedef,
 };

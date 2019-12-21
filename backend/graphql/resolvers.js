@@ -10,13 +10,13 @@ import {
 import moment from 'moment';
 import { User, List, Item } from '../mongodb/models';
 import {
-  getUsers, getUser, getUserByArg, getLists, getList, getListsByUser, getItemsByList, getItemsByUser, getDataByUser,
+  getUsers, getUser, getUserByArg, getLists, getList, getListsByUser, getListsByItem, getItemsByList, getItemsByUser, getDataByUser,
 } from '../mongodb/controllersGet';
 import {
   createUser, updatePassword, deleteUser, createList, updateList, removeItemFromList, updateItem, deleteItem,
 } from '../mongodb/controllersSet';
 import {
-  getUserAverageRating, updateListByTypedef,
+  getUserAverageRating, updateListByTypedef, updateItemByTypedef,
 } from './lib';
 
 require('dotenv').config({ path: 'variables.env' });
@@ -207,20 +207,19 @@ const resolvers = {
     //   commentsByUser: async (_, { id }) => getCommentsByUser({ userId: id }),
     // },
     itemsByList: async (_, { id }) => {
-      const items = await getItemsByList({ listId: id });
-      console.log(`q items getItemsByList: ${JSON.stringify(items)}`);
-      if (items === []) return items;
-      // sort by Rating
-      const sortItems = items.sort((a, b) => {
-      // console.log(`q items sort: ${JSON.stringify(a)}`);
-        console.log(`q items sort.userRating a: ${a.userRating}`);
-        // console.log(`q items sort: ${JSON.stringify(b)}`);
-        console.log(`q items sort.userRating b: ${b.userRating}`);
-        const res = b.userRating - a.userRating;
-        console.log(`q items sort res b-a: ${res}`);
-        return res;
+      const ItemsByList = await getItemsByList({ listId: id });
+      console.log(`q ItemsByList getItemsByList: ${JSON.stringify(ItemsByList)}`);
+      // if (ItemsByList === []) return ItemsByList;
+      return ItemsByList.map(async (item) => {
+        const ListsByItem = await getListsByItem({ itemId: item.id });
+        console.log(`q itemsByList ListsByItem: ${JSON.stringify(ListsByItem)}`);
+        // const listArr = await item.lists.map((listOfItem) => ListsByItem.find((list) => listOfItem.toString() === list.id.toString()));
+        const updItem = await updateItemByTypedef(item);
+        console.log(`q itemsByList updItem: ${JSON.stringify(updItem)}`);
+        updItem.lists = [...ListsByItem];
+        console.log(`q itemsByList updItem After lists: ${JSON.stringify(updItem)}`);
+        return updItem;
       });
-      return sortItems;
     },
     // commentsByUser: async (_, { id }) => getCommentsByUser({ userId: id }),
     itemsByUser: async (_, { id }) => {
