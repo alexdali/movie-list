@@ -65,7 +65,7 @@ class ListCard extends Component {
 
               <Item.Extra>
                 <Label size="medium" >
-                  <Icon name='comment alternate outline'/> {numberOfItems}
+                  <Icon name='film'/> {numberOfItems}
                 </Label>
                 <Label size="medium" >
                   <Icon name='star outline'/> {userAverageRating}

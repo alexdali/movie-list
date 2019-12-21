@@ -153,6 +153,24 @@ const createList = async (arg) => {
 //     .catch((err) => console.error('Error db: ', err));
 // };
 
+// Update List
+const updateList = async (arg) => {
+  console.log(`c updateList arg: ${JSON.stringify(arg)}`);
+  const { listId: _id } = arg;
+  const dataList = { ...arg };
+  delete dataList.listId;
+  console.log(`c updateList dataList: ${JSON.stringify(dataList)}`);
+  console.log(`c updateList arg.listId: ${JSON.stringify(arg.listId)}`);
+  const filter = { _id };
+  console.log(`c updateList filter: ${JSON.stringify(filter)}`);
+  return List.findOneAndUpdate(filter, dataList, { new: true })
+    .then((result) => {
+      console.log(`c updateList findOneAndUpdate result: ${JSON.stringify(result)}`);
+      return result;
+    })
+    .catch((err) => console.error('Error db: ', err));
+};
+
 // //update Item's rating
 // const updateItemRating = async (arg) => {
 //   const {
@@ -187,77 +205,147 @@ const createList = async (arg) => {
 // add and remove Item, update UserRating in Lists
 const updateItem = async (arg) => {
   // itemId: _id, lists, userRating, comment,
+  console.log(`c updateItem arg: ${JSON.stringify(arg)}`);
   const { itemId: _id } = arg;
   const dataItem = { ...arg };
   delete dataItem.itemId;
-  console.log(`c updateItem arg: ${JSON.stringify(arg)}`);
+  console.log(`c updateItem dataItem: ${JSON.stringify(dataItem)}`);
+  console.log(`c updateItem arg.itemId: ${JSON.stringify(arg.itemId)}`);
   const filter = { _id };
+  // const filter = { imdbID: arg.itemId };
+  console.log(`c updateItem filter: ${JSON.stringify(filter)}`);
   // return Item.findOneAndUpdate(filter, { lists, userRating, comment },
-  return Item.findOneAndUpdate(filter, dataItem,
+  return Item.findOneAndUpdate(filter, dataItem, { upsert: true, new: true })
   // return Item.update(
   //     { _id: list._id},
   //     {
   //       "$set": { "userRating": userRating },
   //       $addToSet: { lists: { $each: lists } }
   //     },
-    { new: true })
+  // { new: true })
     .then((result) => {
       // update item in the lists
       // const updItemInLists = await updateItemInLists(arg);
       // if(updItemInLists===null) throw new Error("Error db: error when updating lists");
-      console.log(`c updateItem findOneAndUpdate: ${JSON.stringify(result)}`);
-      const updatedItem = {
-        id: result._id,
-        lists: result.lists,
-        title: result.title,
-        yearOfRelease: result.yearOfRelease,
-        genre: result.genre,
-        plotShort: result.plotShort,
-        userRating: result.userRating,
-        comment: result.comment,
-        userId: result.userId,
-        createdDate: result.createdDate,
-      };
-      console.log(`c updateItem updatedItem: ${JSON.stringify(updatedItem)}`);
-      return updatedItem;
+      console.log(`c updateItem findOneAndUpdate result: ${JSON.stringify(result)}`);
+      // const updatedItem = {
+      //   id: result._id,
+      //   lists: result.lists,
+      //   title: result.title,
+      //   yearOfRelease: result.yearOfRelease,
+      //   genre: result.genre,
+      //   plotShort: result.plotShort,
+      //   userRating: result.userRating,
+      //   comment: result.comment,
+      //   userId: result.userId,
+      //   createdDate: result.createdDate,
+      // };
+      // console.log(`c updateItem updatedItem: ${JSON.stringify(updatedItem)}`);
+      // return updatedItem;
+      return result;
     })
     .catch((err) => console.error('Error db: ', err));
 };
 
-// update item in the lists
-const updateItemInLists = async (arg) => {
-  const { itemId, lists, userRating } = arg;
+// // update item in the lists
+// const updateItemInLists = async (arg) => {
+//   const { itemId, userRating } = arg;
+//   console.log(`c updateItemInLists arg: ${JSON.stringify(arg)}`);
+//   // update item's userRating
+//   // const userRatingItem = await Item.findById(_id, 'userRating');
+//   // if(userRatingItem !== userRating) {
+//   // const updArg = { ...arg };
+//   // updArg.lists = arg.lists.map((list) => ({ _id: list.listId }));
+//   // console.log(`c updateItemInLists updArg: ${JSON.stringify(updArg)}`);
+//   /*
+//   move to resolve
+//   */
+//   const updatedItem = await updateItem(arg);
+//   if (updatedItem === null) throw new Error('Error db: error when updating Item');
+//   // }
+//   // iterate all lists in array
+//   const updatedLists = await arg.lists.map(async (list) => {
+//     // update each list in array: add item to Items array
+//     const updList = await List.findOneAndUpdate(
+//       { _id: list._id },
+//       { $addToSet: { items: { $each: [itemId] } } },
+//       { new: true },
+//     )
+//       .then((result) => {
+//         console.log(`c updateItemInLists List.findOneAndUpdate result: ${JSON.stringify(result)}`);
+//         const itemsArr = result.items.map((item) => ({ id: item }));
+//         // console.log(`c updateItemInLists List.findOneAndUpdate result: ${JSON.stringify(result)}`);
+//         return ({
+//           id: result._id,
+//           title: result.title,
+//           userId: result.userId,
+//           numberOfItems: itemsArr.length,
+//           userAverageRating: result.userAverageRating,
+//           description: result.description,
+//           items: itemsArr,
+//           createdDate: result.createdDate,
+//         });
+//       })
+//       .catch((err) => console.error('Error db: ', err));
+//     console.log(`c updateItemInLists updList result: ${JSON.stringify(updList)}`);
+//     return updList;
+//   });
+//   console.log(`c updateItemInLists updatedLists result: ${JSON.stringify(updatedLists)}`);
+//   return updatedLists;
+//   /*
+//   move to resolve
+//   */
+// };
+
+
+// update Items in List
+const updateItemsInList = async (arg) => {
+  const { itemId, userRating } = arg;
+  console.log(`c updateItemInLists arg: ${JSON.stringify(arg)}`);
   // update item's userRating
   // const userRatingItem = await Item.findById(_id, 'userRating');
   // if(userRatingItem !== userRating) {
-  const updatedItem = await updateItem(itemId, userRating);
+  // const updArg = { ...arg };
+  // updArg.lists = arg.lists.map((list) => ({ _id: list.listId }));
+  // console.log(`c updateItemInLists updArg: ${JSON.stringify(updArg)}`);
+  /*
+  move to resolve
+  */
+  const updatedItem = await updateItem(arg);
   if (updatedItem === null) throw new Error('Error db: error when updating Item');
   // }
   // iterate all lists in array
-  const updatedLists = await lists.map(async (list) => {
+  const updatedLists = await arg.lists.map(async (list) => {
     // update each list in array: add item to Items array
-    const updList = await List.update(
+    const updList = await List.findOneAndUpdate(
       { _id: list._id },
-      // {"$push": { "items": _id } },
       { $addToSet: { items: { $each: [itemId] } } },
       { new: true },
     )
-      .then((result) =>
-      // console.log(`c updateItemInLists List.update: ${JSON.stringify(result)}`);
-        ({
+      .then((result) => {
+        console.log(`c updateItemInLists List.findOneAndUpdate result: ${JSON.stringify(result)}`);
+        const itemsArr = result.items.map((item) => ({ id: item }));
+        // console.log(`c updateItemInLists List.findOneAndUpdate result: ${JSON.stringify(result)}`);
+        return ({
           id: result._id,
           title: result.title,
           userId: result.userId,
-          numberOfItems: result.numberOfItems,
+          numberOfItems: itemsArr.length,
           userAverageRating: result.userAverageRating,
           description: result.description,
-          items: result.items,
+          items: itemsArr,
           createdDate: result.createdDate,
-        }))
+        });
+      })
       .catch((err) => console.error('Error db: ', err));
+    console.log(`c updateItemInLists updList result: ${JSON.stringify(updList)}`);
     return updList;
   });
+  console.log(`c updateItemInLists updatedLists result: ${JSON.stringify(updatedLists)}`);
   return updatedLists;
+  /*
+  move to resolve
+  */
 };
 
 
@@ -372,5 +460,5 @@ const deleteItem = async (arg) => {
 };
 
 export {
-  createUser, updatePassword, deleteUser, createList, updateItemInLists, removeItemFromList, updateItem, deleteItem,
+  createUser, updatePassword, deleteUser, createList, updateList, removeItemFromList, updateItem, deleteItem,
 };

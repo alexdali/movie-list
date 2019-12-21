@@ -22,15 +22,15 @@ const LISTS_BY_USER_QUERY = gql`
       items {
         id
         userId
-        list {
-          id
-        }
-        title
-        yearOfRelease
-        genre
-        plotShort
+        #list {
+        #  id
+        #}
+        #title
+        #yearOfRelease
+        #genre
+        #plotShort
         userRating
-        comment
+        #comment
         createdDate
       }
     }

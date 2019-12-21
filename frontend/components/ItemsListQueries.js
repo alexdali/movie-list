@@ -1,6 +1,5 @@
 import gql from 'graphql-tag';
 
-
 const COMMENTS_BY_LIST_QUERY = gql`
   query COMMENTS_BY_LIST_QUERY ($id: String!) {
     commentsByPost(id: $id) {
@@ -28,15 +27,42 @@ const LIST_QUERY = gql`
       items {
         id
         userId
-        list {
-          id
-        }
-        title
-        yearOfRelease
-        genre
-        plotShort
+        #list {
+        #  id
+        #}
+        #title
+        #yearOfRelease
+        #genre
+        #plotShort
         userRating
-        comment
+        #comment
+        createdDate
+      }
+    }
+  }
+`;
+
+const ITEMS_BY_USER_QUERY = gql`
+  query ITEMS_BY_USER_QUERY(
+    $id: String!
+  ) {
+    itemsByUser(id: $id) {
+      id
+      title
+      userId
+      genre
+      yearOfRelease
+      plotShort
+      userRating
+      comment
+      createdDate
+      lists {
+        id
+        #userId
+        title
+        description
+        numberOfItems
+        userAverageRating
         createdDate
       }
     }
@@ -44,4 +70,37 @@ const LIST_QUERY = gql`
 `;
 
 
-export { COMMENTS_BY_LIST_QUERY, LIST_QUERY };
+const ITEMS_BY_LIST_QUERY = gql`
+  query ITEMS_BY_LIST_QUERY(
+    $id: String!
+  ) {
+    itemsByList(id: $id) {
+      id
+      title
+      userId
+      genre
+      yearOfRelease
+      plotShort
+      userRating
+      comment
+      createdDate
+      list {
+        id
+        userId
+        items {
+          id
+        }
+        title
+        description
+        numberOfItems
+        userAverageRating
+        createdDate
+      }
+    }
+  }
+`;
+
+
+export {
+  COMMENTS_BY_LIST_QUERY, LIST_QUERY, ITEMS_BY_USER_QUERY, ITEMS_BY_LIST_QUERY,
+};

@@ -70,17 +70,18 @@ const getLists = async () => List.find()
 const getList = async (arg) => List.findById(arg)
   .then((result) => {
     console.log(`c getList findById: ${JSON.stringify(result)}`);
-    return ({
-      id: result._id,
-      title: result.title,
-      userId: result.userId,
-      description: result.description,
-      items: result.items,
-      // numberOfItems: result.numberOfItems,
-      // numberOfItems: result.items.length,
-      userAverageRating: result.userAverageRating,
-      createdDate: result.createdDate,
-    });
+    // return ({
+    //   id: result._id,
+    //   title: result.title,
+    //   userId: result.userId,
+    //   description: result.description,
+    //   items: result.items,
+    //   // numberOfItems: result.numberOfItems,
+    //   // numberOfItems: result.items.length,
+    //   userAverageRating: result.userAverageRating,
+    //   createdDate: result.createdDate,
+    // });
+    return result;
   })
   .catch((err) => console.error('Error db: ', err));
 
@@ -136,14 +137,16 @@ const getListsByUser = async (arg) => List.find({ userId: arg.userId })
 // Get all items by List
 const getItemsByList = async (arg) => {
   const { listId } = arg;
-  return Item.find({ listId })
+  console.log(`c getItemsByList listId: ${JSON.stringify(listId)}`);
+  // return Item.find({ listId })
+  return Item.find({ lists: listId })
     .then((result) => {
-      console.log(`c getItemsByList find: ${JSON.stringify(result)}`);
+      console.log(`c getItemsByList find result: ${JSON.stringify(result)}`);
       if (result !== []) {
         return result.map((item) => ({
           id: item._id,
           userId: item.userId,
-          listId: item.listId,
+          lists: item.lists,
           title: item.title,
           yearOfRelease: item.yearOfRelease,
           genre: item.genre,

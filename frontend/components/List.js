@@ -21,7 +21,7 @@ const List = (props) => {
         if (loading) return <LoadingBar count={1}/>;
         if (error) return (<ErrorMessage error={'Ошибка! Отсутствует соединение с базой данных'}/>);
         if ((typeof data === 'undefined') || (data.list === null)) return null;
-        let author = authors.find((el) => el.id === data.list.userId);
+        let author = authors.find((el) => el.id == data.list.userId);
         if (typeof author === 'undefined') {
           author = {
             id: '',

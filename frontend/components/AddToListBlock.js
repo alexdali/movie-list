@@ -15,43 +15,47 @@ import styled from 'styled-components';
 // import moment from 'moment';
 import withUserContext from '../lib/withUserContext';
 import { LISTS_BY_USER_QUERY } from './ListsByUser';
-// import { CURRENT_USER_QUERY } from './User';
+import { ITEMS_BY_USER_QUERY } from './ItemsListQueries';
+// import { ALL_LISTS_QUERY } from './RatingList';
 import LoadingBar from './LoadingBar';
+import ErrorMessage from './ErrorMessage';
 
 
 const RowDiv = styled.div`
 `;
 
-// const SEARCH_ITEM_QUERY = gql`
-//   query SEARCH_ITEM_QUERY(
-//     $title: String
-//     $imdbID: String
-//     $year: String
-//     $genre: String
-//   ) {
-//     searchItem(
-//       title: $title
-//       imdbID: $imdbID
-//       year: $year
-//       genre: $genre
-//       ) {
-//         imdbID
-//         title
-//         year
-//         rated
-//         released
-//         genre
-//         director
-//         actors
-//         language
-//         plot
-//         country
-//         imdbRating
-//         imdbVotes
-//         type
-//     }
-//   }
-// `;
+const UPDATE_ITEM_IN_LISTS_MUTATION = gql`
+  mutation UPDATE_ITEM_IN_LISTS_MUTATION(
+    $userId: String!
+    $itemId: String!
+    $lists: [ListInput]!
+    $title: String!
+    $yearOfRelease: String!
+    $genre: String!
+    $userRating: Int!
+  ) {
+    updateItemInLists(
+      userId: $userId
+      itemId: $itemId
+      lists: $lists
+      title: $title
+      yearOfRelease: $yearOfRelease
+      genre: $genre
+      userRating: $userRating
+      ) {
+        id
+        title
+        userId
+        description
+        numberOfItems
+        userAverageRating
+        createdDate
+        items {
+          id
+        }
+    }
+  }
+`;
 
 const withListDataQuery = graphql(
   LISTS_BY_USER_QUERY,
@@ -63,16 +67,6 @@ const withListDataQuery = graphql(
     }),
   },
 );
-
-
-// const listOptions = [
-// {
-//   key: 'title', text: 'by Title', name: 'title', value: 'title', onClick: this.handleItemClick,
-// },
-// {
-//   key: 'ID', text: 'by ID', name: 'imdbID', value: 'imdbID', onClick: this.handleItemClick,
-// },
-// ];
 
 
 class AddToListBlock extends Component {
@@ -91,22 +85,9 @@ class AddToListBlock extends Component {
 
   state = {
     listsByUser: [],
-    rating: 0,
     maxRating: 10,
-    // // readOnly: false,
-    // firstParamText: 'by Title',
-    // firstParamName: 'title',
-    // searchByID: false,
-    // firstParamVal: [],
     value: [],
-    // searchblock: {
-    //   title: '',
-    //   imdbID: '',
-    //   year: '',
-    //   genre: '',
-    // },
-    // showEdit: '',
-    // resultSearch: [],
+    rating: 0,
   };
 
   componentDidMount() {
@@ -124,19 +105,10 @@ class AddToListBlock extends Component {
 
   resetInput = () => {
     this.setState({
-      // firstParamText: 'by Title',
-      // firstParamName: 'title',
-      // searchByID: false,
       value: [],
-      // searchblock: {
-      //   // firstParamVal: '',
-      //   title: '',
-      //   imdbID: '',
-      //   year: '',
-      //   genre: '',
-      // },
-      // showEdit: '',
-      // resultSearch: [],
+      listsByUser: [],
+      rating: 0,
+      maxRating: 10,
     });
   }
 
@@ -165,50 +137,93 @@ class AddToListBlock extends Component {
 
   // handleSearchChange = (e, { searchQuery }) => this.setState({ searchQuery })
 
-  addToLists = (e, data) => {
+  addToLists = async (variables, updateItemInLists, addToListShow) => {
     // console.log('NavBar handleItemClick: e', e);
     console.log('AddToListBlock addToLists this.state.value: ', this.state.value);
     // const { name, value, text } = data;
     // console.log('handleItemClick: value: ', value);
-    // this.setState({
-    //   firstParamText: text,
-    //   firstParamName: value,
-    // });
-    // if (value === 'imdbID') {
-    //   this.setState({
-    //     searchByID: true,
-    //   });
-    // }
+    // const {
+    //   user: { id }, item: {
+    //     imdbID, title, year: yearOfRelease, genre,
+    //   },
+    // } = this.props;
+    // const { value, rating } = this.state;
+    console.log(`AddToListBlock addToLists variables:  ${variables}`);
+    // console.log(`AddToListBlock addToLists this.state:  id: ${id}, value: ${value}, rating: ${rating}, imdbID: ${imdbID}`);
+    // const ListInput = value.map((item) => ({ listId: item }));
+    console.log(`mut addToLists ListInput: ${JSON.stringify(ListInput)}`);
+
+    const res = await updateItemInLists({
+      variables: { variables },
+      refetchQueries: [
+        {
+          query: LISTS_BY_USER_QUERY,
+          variables: { id },
+        },
+        {
+          query: ITEMS_BY_USER_QUERY,
+          variables: { id },
+        },
+        // {
+        //   query: ALL_LISTS_QUERY,
+        // },
+      ],
+    });
+    console.log(`mut addToLists res.data.updateItemInLists: ${JSON.stringify(res.data.updateItemInLists)}`);
+    // reset state
+    this.setState({
+      listsByUser: [],
+      rating: 0,
+      maxRating: 10,
+      value: [],
+    },
+    () => {
+      addToListShow();
+    });
   };
 
   render() {
-    // console.log(`AddToListBlock render this.props: ${JSON.stringify(this.props)}`);
-    const { user, data } = this.props;
+    console.log(`AddToListBlock render this.props: ${JSON.stringify(this.props)}`);
+    const {
+      user: { id }, item: {
+        imdbID, title, yearOfRelease, genre,
+      }, data, addToListShow,
+    } = this.props;
     console.log(`AddToListBlock render data.listsByUser: ${JSON.stringify(data.listsByUser)}`);
     const {
-      // searchblock: {
-      //   title, itemId, year, genre,
-      // },
-      // firstParamText,
-      // firstParamName,
-      // firstParamVal,
-      // searchQuery,
-      // showEdit,
-      value,
-      // resultSearch,
+      value, rating,
     } = this.state;
+    const ListInput = value.map((item) => ({ listId: item }));
+    const variables = {
+      userId: id,
+      itemId: imdbID,
+      lists: ListInput,
+      userRating: rating,
+      title,
+      year: yearOfRelease,
+      genre,
+    };
 
-    // return (
     if (data.loading) return <LoadingBar count={2}/>;
     if (data.error) return (<ErrorMessage error={'Ошибка! Отсутствует соединение с базой данных'}/>);
     const listOptions = this.listToOptions(data.listsByUser);
     console.log(`AddToListBlock render listOptions: ${JSON.stringify(listOptions)}`);
     console.log(`AddToListBlock render Value: ${value}`);
     return (
-    // <RowDiv>
-            <ApolloConsumer>
-              {(client) => (
-                <>
+      <Mutation
+        mutation={UPDATE_ITEM_IN_LISTS_MUTATION}
+        variables={ variables }
+      >
+        {(updateItemInLists, { loading, error }) => {
+          if (error) {
+            return (
+            <Message negative>
+              <Message.Header>Ошибка!</Message.Header>
+              <p>{error.message.replace('GraphQL error: ', '')}</p>
+            </Message>);
+          }
+          return (
+            <>
                 <Divider clearing />
                 <div>
                   <p>Rate the film</p>
@@ -217,7 +232,6 @@ class AddToListBlock extends Component {
                 <Divider horizontal>And</Divider>
                 {/* <Segment clearing> */}
                   <Dropdown
-                    // fluid
                     multiple
                     onChange={this.handleChange}
                     // onSearchChange={this.handleSearchChange}
@@ -229,9 +243,9 @@ class AddToListBlock extends Component {
                     value={value}
                   />
                   <Button
-                    // labelPosition="right"
+                    loading={loading}
                     floated='right'
-                    onClick={(e) => this.addToLists(e, client)}
+                    onClick={() => this.addToLists(variables, updateItemInLists, addToListShow)}
                   >
                       Add to list
                   </Button>
@@ -247,12 +261,11 @@ class AddToListBlock extends Component {
                   </Segment> */}
 
                 {/* </Segment> */}
-                </>
-              )}
-            </ApolloConsumer>
-    // </RowDiv>
+            </>
+          );
+        }}
+      </Mutation>
     );
-    // );
   }
 }
 

@@ -35,7 +35,7 @@ type List {
   userId: String!
   description: String
   numberOfItems: Int!
-  userAverageRating: Int!
+  userAverageRating: Float!
   createdDate: DateTime!
   items: [Item]!
 }
@@ -88,7 +88,7 @@ type Query {
   listsByUser(id: String!): [List]!
   itemsByUser(id: String!): [Item]!
   itemsByList(id: String!): [Item]!
-  searchItem(title: String, imdbID: String, year: String, genre: String): [ItemDB]!
+  searchItem(title: String, imdbID: String, year: String, genre: String): ItemDB
 }
 
 type Mutation {
@@ -99,7 +99,7 @@ type Mutation {
   deleteUser(userId: String!, password: String!): SuccessMessage
   createList(userId: String!, title: String!, description: String!): List!
   #deleteList(listId: String!, userId: String!): SuccessMessage
-  updateItemInLists(userId: String!, lists: [ListInput]!, itemId: String!, userRating: Int!, ): [List]!
+  updateItemInLists(userId: String!, lists: [ListInput]!, itemId: String!, userRating: Int!, title: String!, yearOfRelease: String!, genre: String! ): [List]!
   removeItemFromList(userId: String!, listId: String!, itemId: String!): List!
   updateItem(userId: String!, itemId: String!, userRating: Int!, comment: String!): Item!
   deleteItem(id: String!, userId: String!): SuccessMessage

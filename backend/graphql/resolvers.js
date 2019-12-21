@@ -13,8 +13,11 @@ import {
   getUsers, getUser, getUserByArg, getLists, getList, getListsByUser, getItemsByList, getItemsByUser, getDataByUser,
 } from '../mongodb/controllersGet';
 import {
-  createUser, updatePassword, deleteUser, createList, updateItemInLists, removeItemFromList, updateItem, deleteItem,
+  createUser, updatePassword, deleteUser, createList, updateList, removeItemFromList, updateItem, deleteItem,
 } from '../mongodb/controllersSet';
+import {
+  getUserAverageRating, updateListByTypedef,
+} from './lib';
 
 require('dotenv').config({ path: 'variables.env' });
 
@@ -75,25 +78,48 @@ const resolvers = {
       return usersWithInfo;
     },
     list: async (_, { id }) => {
-      const resList = await getList(id);
-      console.log(`query list id: ${id}`);
-      console.log(`query list resList: ${JSON.stringify(resList)}`);
-      const itemsByList = await getItemsByList({ listId: resList.id });
-      if (itemsByList.length !== 0) {
-        // const average = itemsByList.reduce((total, item, index, array) => {
-        //   total += item.userRating;
-        //   return total / array.length;
-        // }, 0);
-        // resList.userAverageRating = average;
-        const sumRating = itemsByList.reduce((sum, item) => sum + item.userRating, 0);
-        resList.userAverageRating = sumRating / itemsByList.length;
-      }
-      console.log('q list itemsByList.length: ', itemsByList.length);
-      return {
-        ...resList,
-        numberOfItems: itemsByList.length,
-        items: itemsByList,
+      const reqList = await getList(id);
+      // change the result according to the type List
+      const list = {
+        id: reqList._id,
+        title: reqList.title,
+        userId: reqList.userId,
+        description: reqList.description,
+        items: reqList.items,
+        // numberOfItems: reqList.numberOfItems,
+        // numberOfItems: reqList.items.length,
+        userAverageRating: reqList.userAverageRating,
+        createdDate: reqList.createdDate,
       };
+      console.log(`query list id: ${id}`);
+      console.log(`query list List: ${JSON.stringify(list)}`);
+      const itemsByList = await getItemsByList({ listId: list.id });
+      // if (itemsByList.length !== 0) {
+      // const average = itemsByList.reduce((total, item, index, array) => {
+      //   total += item.userRating;
+      //   return total / array.length;
+      // }, 0);
+      // reqList.userAverageRating = average;
+      // const sumRating = itemsByList.reduce((sum, item) => sum + item.userRating, 0);
+      // reqList.userAverageRating = sumRating / itemsByList.length;
+      // check, if itemsByList.length = 0!
+      // }
+      const sumRating = itemsByList.length !== 0 ? itemsByList.reduce((sum, item) => sum + item.userRating, 0) : 0;
+      // console.log('q itemsByList sumRating: ', sumRating);
+      // console.log('q itemsByList itemsByList.length: ', itemsByList.length);
+      // console.log('q itemsByList sumRating / itemsByList.length: ', sumRating / itemsByList.length);
+      const fullList = { ...list };
+      // check, if sumRating = 0!
+      fullList.userAverageRating = sumRating === 0 ? 0 : sumRating / itemsByList.length;
+      fullList.numberOfItems = itemsByList.length;
+      fullList.items = itemsByList;
+      console.log('q list fullList.numberOfItems: ', fullList.numberOfItems);
+      // return {
+      //   ...list,
+      //   numberOfItems: itemsByList.length,
+      //   items: itemsByList,
+      // };
+      return fullList;
     },
     lists: async () => {
       const lists = await getLists() || [];
@@ -105,23 +131,21 @@ const resolvers = {
         const res = b.createdDate - a.createdDate;
         // console.log(`q lists sort res b-a: ${res}`);
         return res;
-      }).map(async (resList) => {
-        const itemsByList = await getItemsByList({ listId: resList.id });
+      }).map(async (reqList) => {
+        const itemsByList = await getItemsByList({ listId: reqList.id });
         // console.log('q lists itemsByList.length: ', itemsByList.length);
-        if (itemsByList.length !== 0) {
-          // const average = itemsByList.reduce((total, item, index, array) => {
-          //   total += item.userRating;
-          //   return total / array.length;
-          // }, 0);
-          // resList.userAverageRating = average;
-          const sumRating = itemsByList.reduce((sum, item) => sum + item.userRating, 0);
-          resList.userAverageRating = sumRating / itemsByList.length;
-        }
-        return {
-          ...resList,
-          numberOfItems: itemsByList.length,
-          items: itemsByList,
-        };
+        // check, if itemsByList.length = 0!
+        const sumRating = itemsByList.length !== 0 ? itemsByList.reduce((sum, item) => sum + item.userRating, 0) : 0;
+        // console.log('q itemsByList sumRating: ', sumRating);
+        // console.log('q lists: itemsByList itemsByList.length: ', itemsByList.length);
+        // console.log('q itemsByList sumRating / itemsByList.length: ', sumRating / itemsByList.length);
+        const fullList = { ...reqList };
+        // check, if sumRating = 0!
+        fullList.userAverageRating = sumRating === 0 ? 0 : sumRating / itemsByList.length;
+        fullList.numberOfItems = itemsByList.length;
+        console.log('q lists:  fullList.numberOfItems: ', fullList.numberOfItems);
+        fullList.items = itemsByList;
+        return fullList;
       });
       console.log('q lists sortLists: ', sortLists);
       return sortLists;
@@ -143,12 +167,13 @@ const resolvers = {
         // }
         // check, if itemsByList.length = 0!
         const sumRating = itemsByList.length !== 0 ? itemsByList.reduce((sum, item) => sum + item.userRating, 0) : 0;
-        console.log('q itemsByList sumRating: ', sumRating);
-        console.log('q itemsByList itemsByList.length: ', itemsByList.length);
-        console.log('q itemsByList sumRating / itemsByList.length: ', sumRating / itemsByList.length);
+        // console.log('q itemsByList sumRating: ', sumRating);
+        // console.log('q itemsByList itemsByList.length: ', itemsByList.length);
+        // console.log('q itemsByList sumRating / itemsByList.length: ', sumRating / itemsByList.length);
         const fullList = { ...resList };
         fullList.userAverageRating = sumRating === 0 ? 0 : sumRating / itemsByList.length;
         fullList.numberOfItems = itemsByList.length;
+        console.log('q listsByUser: fullList.numberOfItems: ', fullList.numberOfItems);
         fullList.items = itemsByList;
         // return {
         //   ...resList,
@@ -156,8 +181,8 @@ const resolvers = {
         //   items: itemsByList,
         // };
         // console.log('q itemsByList resList.userAverageRating: ', resList.userAverageRating);
-        console.log('q itemsByList fullList.items: ', fullList.items);
-        console.log('q itemsByList fullList.userAverageRating: ', fullList.userAverageRating);
+        // console.log('q itemsByList fullList.items: ', fullList.items);
+        // console.log('q itemsByList fullList.userAverageRating: ', fullList.userAverageRating);
         return fullList;
       });
       // console.log('q listsByUser lists: ', lists);
@@ -211,45 +236,51 @@ const resolvers = {
       const reqParams = imdbID === '' ? `t=${title}` : `i=${imdbID}`;
       const url = `${apiUrl}?${reqParams}&apikey=${apiKey}`;
       console.log(`q searchItem url: ${url}`);
-      // data.append('file', files[0]);
-      // data.append('upload_preset', 'sickfits');
-      const resArray = [];
+      // const resArray = [];
       const res = await fetch(url)
         .then((response) => {
           if (response.status >= 400) {
             throw new Error('Bad response from server');
           }
           return response.json();
-        }) // .then((response) => response.json())
+        })
         .then((result) => {
-          console.log(`q searchItem fetch API result: ${JSON.stringify(result)}`);
-          // console.log(`q searchItem fetch API result.Title: ${result.Title}`);
+          console.log(`q searchItem fetch API SON.stringify.result: ${JSON.stringify(result)}`);
+          if (result.Error) {
+            throw new Error(result.Error);
+          }
+
           return {
-            imdbID: result.imdbID,
-            title: result.Title,
-            year: result.Year,
-            rated: result.Rated,
-            released: result.Released,
-            genre: result.Genre,
-            director: result.Director,
-            actors: result.Actors,
-            language: result.Language,
-            plot: result.Plot,
-            country: result.Country,
-            imdbRating: result.imdbRating,
-            imdbVotes: result.imdbVotes,
-            type: result.Type,
+            imdbID: result.imdbID || '',
+            title: result.Title || '',
+            year: result.Year || '',
+            rated: result.Rated || '',
+            released: result.Released || '',
+            genre: result.Genre || '',
+            director: result.Director || '',
+            actors: result.Actors || '',
+            language: result.Language || '',
+            plot: result.Plot || '',
+            country: result.Country || '',
+            imdbRating: result.imdbRating || '',
+            imdbVotes: result.imdbVotes || '',
+            type: result.Type || '',
           };
           // return result;
         })
-        .catch((err) => console.error('Error API: ', err));
-      resArray.push(res);
-      console.log(`q searchItem fetch API resArray: ${resArray}`);
+        .catch((err) => {
+          console.error('Error API: ', err);
+          return err;
+        });
+      console.log(`q searchItem fetch API res: ${JSON.stringify(res)}`);
+      return res;
+
+      // resArray.push(res);
+      // console.log(`q searchItem fetch API resArray: ${JSON.stringify(resArray)}`);
       // const temp = {
       //   title: 'Terminator', year: '1991', rated: 'N/A', released: 'N/A', genre: 'Short, Action, Sci-Fi', director: 'Ben Hernandez', Writer: 'James Cameron (characters), James Cameron (concept), Ben Hernandez (screenplay)', actors: 'Loris Basso, James Callahan, Debbie Medows, Michelle Kovach', plot: 'A cyborg comes from the future, to kill a girl named Sarah Lee.', language: 'English', country: 'USA', imdbRating: '6.2', imdbVotes: '25', imdbID: 'tt5817168', type: 'movie',
       // };
-      // JSON.parse(temp);
-      return resArray;
+      // return resArray;
     },
   },
 
@@ -411,16 +442,104 @@ const resolvers = {
       return newList;
     },
     // add and remove Item, update UserRating in Lists
-    updateItemInLists: async (_, {
-      userId, listsId: lists, itemId, userRating,
-    }, context) => {
+    updateItemInLists: async (_, arg, context) => {
+      // const {
+      //   userId, lists, itemId, userRating,
+      // } = arg;
+      console.log(`m updateItemInLists arg: ${JSON.stringify(arg)}`);
       const { id } = context.user;
-      if (id !== userId) {
+      // console.log(`m updateItemInLists userId: ${userId}`);
+      // console.log(`m updateItemInLists id: ${id}`);
+      // console.log('m updateItemInLists id !== arg.userId: ', id.toString() !== arg.userId.toString());
+      if (id.toString() !== arg.userId.toString()) {
         throw new Error('Вы не можете редактировать чужой список!');
       }
-      const dataItemInLists = { itemId, lists, userRating };
-      console.log(`m updateItemInLists dataItemInLists: ${JSON.stringify(dataItemInLists)}`);
-      const updatedLists = await updateItemInLists(dataItemInLists);
+      // update the array lists according to the type Item
+      // const updArg = { ...arg };
+      // updArg.lists = arg.lists.map((list) => ({ _id: list.listId }));
+      const listIdArr = arg.lists.map((list) => ({ _id: list.listId }));
+      console.log(`m updateItemInLists listIdArr: ${JSON.stringify(listIdArr)}`);
+      const {
+        itemId, userId, userRating, title, yearOfRelease, genre,
+      } = arg;
+      const dataItem = {
+        itemId, userId, lists: listIdArr, userRating, title, yearOfRelease, genre,
+      };
+      console.log(`m updateItemInLists dataItem: ${JSON.stringify(dataItem)}`);
+      // //const updatedLists = await updateItemInLists(dataItemInLists);
+      console.log(`m updateItemInLists 1: ${1}`);
+      // 1. update Item: new Array lists, userRating
+      // if the Item is not in the database, then add it
+      const updatedItem = await updateItem(dataItem);
+      if (updatedItem === null) throw new Error('Error db: error when updating Item');
+      console.log(`m updateItemInLists updatedItem: ${JSON.stringify(updatedItem)}`);
+      console.log(`m updateItemInLists 2: ${2}`);
+      // 2. update all lists in the Item's array
+      // iterate all lists in array
+      const updatedLists = await arg.lists.map(async (list) => {
+        // update each list in array: add item to Items array
+        // a) get the List by ID
+        console.log(`m updateItemInLists 2a: ${'2a'}`);
+        const reqList = await getList(list.listId);
+        console.log(`m updateItemInLists reqList: ${JSON.stringify(reqList)}`);
+        // update the array items according to the type List
+        const itemIdArr = reqList.items.map((item) => ({ _id: item }));
+        console.log(`m updateItemInLists itemIdArr: ${JSON.stringify(itemIdArr)}`);
+        console.log(`m updateItemInLists 2b: ${'2b'}`);
+        // b) update the array items: push new Item,
+        // check for new Item not in the array, then push new Item
+        if (!reqList.items.includes(itemId)) {
+          itemIdArr.push({ _id: itemId });
+          console.log(`m updateItemInLists itemIdArr After Push: ${JSON.stringify(itemIdArr)}`);
+        }
+        console.log(`m updateItemInLists 2c: ${'2c'}`);
+        // c) update property values: items, numberOfItems, userAverageRating
+        //  get all items by list ID
+        const itemsByList = await getItemsByList({ listId: list.listId });
+        console.log(`m updateItemInLists itemsByList: ${JSON.stringify(itemsByList)}`);
+        // const listsArr = updatedItem.lists.map((el) => ({ id: el }));
+        // console.log(`m updateItemInLists listsArr: ${JSON.stringify(listsArr)}`);
+        const updItem = {
+          id: updatedItem._id,
+          userId: updatedItem.userId,
+          lists: updatedItem.lists.map((el) => ({ id: el })),
+          title: updatedItem.title,
+          yearOfRelease: updatedItem.yearOfRelease,
+          genre: updatedItem.genre,
+          plotShort: updatedItem.plotShort,
+          userRating: updatedItem.userRating,
+          comment: updatedItem.comment,
+          createdDate: updatedItem.createdDate,
+        };
+        // itemsByList.push(updItem);
+        const itemsByListUpd = itemsByList.map((item) => {
+          if (item.id === updatedItem._id) {
+            return updItem;
+          }
+          return item;
+        });
+        console.log(`m updateItemInLists itemsByListUpd After MAP: ${JSON.stringify(itemsByListUpd)}`);
+        // get property userAverageRating
+        const userAverageRating = getUserAverageRating(itemsByListUpd);
+        console.log('m updateItemInLists: updatedLists getUserAverageRating: ', userAverageRating);
+        console.log(`m updateItemInLists 2d: ${'2d'}`);
+        // d) set all new values in one object
+        const dataList = {
+          listId: list.listId, items: itemIdArr, userAverageRating, numberOfItems: itemsByListUpd.length,
+        };
+        console.log('m updateItemInLists: updatedLists dataList: ', dataList);
+        console.log(`m updateItemInLists 2e: ${'2e'}`);
+        // e) call function to update the List
+        const updList = await updateList(dataList);
+        // const listItemsArr = updList.items.map((el) => ({ id: el }));
+        // console.log(`m updateItemInLists:  updList listItemsArr: ${JSON.stringify(listItemsArr)}`);
+
+        const newUpdList = updateListByTypedef(updList);
+        // newUpdList.items = listItemsArr;
+        console.log(`m updateItemInLists:  newUpdList: ${JSON.stringify(newUpdList)}`);
+        return newUpdList;
+      });
+      console.log(`c updateItemInLists updatedLists result: ${JSON.stringify(updatedLists)}`);
       return updatedLists;
     },
     // remove Item from List
@@ -443,10 +562,29 @@ const resolvers = {
         throw new Error('Вы не можете редактировать элементы из чужого списка!');
       }
       // console.log(`m updateItem lists: ${lists}`);
-      const dataItem = { itemId, userRating, comment };
+      const dataItem = {
+        itemId, userId, userRating, comment,
+      };
       console.log(`m updateItem dataItem: ${JSON.stringify(dataItem)}`);
       const updatedItem = await updateItem(dataItem);
-      return updatedItem;
+      if (updatedItem === null) throw new Error('Error db: error when updating Item');
+
+      // change the result according to the type Item
+      // update the array lists according to the type Item
+      const listsArr = updatedItem.lists.map((list) => ({ id: list }));
+      const updItem = {
+        id: updatedItem._id,
+        lists: listsArr,
+        title: updatedItem.title,
+        yearOfRelease: updatedItem.yearOfRelease,
+        genre: updatedItem.genre,
+        plotShort: updatedItem.plotShort,
+        userRating: updatedItem.userRating,
+        comment: updatedItem.comment,
+        userId: updatedItem.userId,
+        createdDate: updatedItem.createdDate,
+      };
+      return updItem;
     },
     // deleteList: async (_, { listId, userId }) => {
     //   console.log(`m deleteList listId: ${listId}, userId: ${userId} `);

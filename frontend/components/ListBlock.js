@@ -4,7 +4,7 @@ import { adopt } from 'react-adopt';
 import gql from 'graphql-tag';
 import PropTypes from 'prop-types';
 import {
-  Message, Segment, Button, Icon, Form, Rating, Item,
+  Message, Segment, Button, Icon, Form, Rating, Item, Label,
 } from 'semantic-ui-react';
 import TextareaAutosize from 'react-textarea-autosize';
 import Router from 'next/router';
@@ -112,71 +112,50 @@ const DELETE_LIST_MUTATION = gql`
   }
 `;
 
-// const UpdateBlock = (props) => {
-//   const {
-//     showEdit, enableEdit, updatePostItem, updateList, loadingUpdate, deletePostItem, deleteList,
-//   } = props.updateProps;
-//   return (
-//     <>
-//       {showEdit === '' ? (
-//         <Button.Group basic attached='bottom'>
-//           <Button
-//             icon
-//             size="large"
-//             onClick={() => enableEdit('1')}
-//           >
-//             <Icon name="edit outline" />
-//           </Button>
-//           <Button
-//             icon size="large"
-//             onClick={() => deletePostItem(deleteList)}
-//           >
-//             <Icon name="trash alternate outline" />
-//           </Button>
-//         </Button.Group>
-//       ) : (
-//         <Segment attached='bottom'>
-//           <Button
-//             onClick={() => updatePostItem(updateList)}
-//             >
-//               Обнов{loadingUpdate ? 'ление' : 'ить'}
-//           </Button>
-//           <Button onClick={() => enableEdit('')}>Отмена</Button>
-//         </Segment>
-//       )}
-//     </>
-//   );
-// };
 
 const ListItem = (props) => {
   // const {
   //   showEdit, enableEdit, updatePostItem, updateList, loadingUpdate, deletePostItem, deleteList,
   // } = props.updateProps;
-  const {
-    updateListMutate, removeItemMutate, item,
-  } = props.itemProps;
+  const { item } = props;
   return (
           <Item>
             <Item.Image src='https://react.semantic-ui.com/images/wireframe/image.png' />
 
             <Item.Content>
-              <Item.Header as='a'>{item.title}</Item.Header>
+              <Item.Header as='a'>{'item.title'}</Item.Header>
               <Item.Meta>
-                <span className='cinema'>{item.yearOfRelease}</span>
-                <span className='cinema'>{item.genre}</span>
-                <span className='cinema'>{item.plotShort}</span>
+                <span className='cinema'>{item.id}</span>
               </Item.Meta>
-              <Item.Description>{item.plotShort}</Item.Description>
-              <Item.Description>{item.comment}</Item.Description>
+              <Item.Meta>
+                <span className='cinema'>{'item.yearOfRelease'}</span>
+              </Item.Meta>
+              <Item.Meta>
+                <span className='cinema'>{'item.genre'}</span>
+              </Item.Meta>
+              <Item.Meta>
+                <span className='cinema'>{'item.plotShort'}</span>
+              </Item.Meta>
+              <Item.Description>{'item.plotShort'}</Item.Description>
+              <Item.Description>{'item.comment'}</Item.Description>
               <Item.Extra>
+              <Rating icon='star' defaultRating={item.userRating} maxRating={10} />
                 <Button floated='right'>
                   Buy tickets
                   <Icon name='right chevron' />
                 </Button>
-                <Label>IMAX</Label>
-                <Label icon='globe' content='Additional Languages' />
+                {/* <Label>IMAX</Label> */}
+                {/* <Label icon='globe' content='Additional Languages' /> */}
+              {/*
+                TO-DO: query by item.list.id
+
+                item.lists.length === 0 ? null
+                  : <>
+                      <p>Ratings with this film: </p>
+                      items.lists.map((list) => <Label>list.id</Label>)
+                  </>
+              */}
               </Item.Extra>
-              <Rating icon='star' defaultRating={5} maxRating={10} />
             </Item.Content>
           </Item>
   );
@@ -221,75 +200,6 @@ class ListBlock extends Component {
     }
   }
 
-  // //fn for enable/disable edit list
-  // enableEdit = (val) => {
-  //   if (val === '1') {
-  //     this.setState({
-  //       showEdit: '1',
-  //       readOnly: false,
-  //     });
-  //   } else {
-  //     this.setState({
-  //       showEdit: '',
-  //       readOnly: true,
-  //       listblock: this.props.listblock,
-  //     });
-  //   }
-  // };
-
-  handleChange = (e, data) => {
-    // const { name, type, value } = e.target;
-    // const val = value;
-    // const nam = name;
-
-    // const { listblock } = this.state;
-    // listblock[nam] = val;
-    // this.setState({ listblock });
-  };
-
-  // updatePostItem = async (updateList) => {
-  //   const { listblock } = this.state;
-  //   const res = await updateList({
-  //     variables: {
-  //       userId: listblock.userId,
-  //       listId: listblock.id,
-  //       title: listblock.title,
-  //       content: listblock.content,
-  //     },
-  //     refetchQueries: [{
-  //       query: ALL_LISTS_QUERY,
-  //     }],
-  //   });
-  //   this.setState({
-  //     listblock: this.props.listblock,
-  //     showEdit: '',
-  //     readOnly: true,
-  //   });
-  // };
-
-  // deletePostItem = async (deleteList) => {
-  //   const { listblock } = this.state;
-  //   const { user } = this.props;
-  //   const res = await deleteList({
-  //     variables: {
-  //       listId: listblock.id,
-  //       userId: user.id,
-  //     },
-  //     refetchQueries: [{
-  //       query: ALL_LISTS_QUERY,
-  //     },
-  //     {
-  //       query: CURRENT_USER_QUERY,
-  //     }],
-  //   });
-
-  //   if (res) {
-  //     Router.push({
-  //       pathname: '/list',
-  //     });
-  //   }
-  // };
-
   render() {
     const user = this.props.user ? this.props.user : {
       id: '',
@@ -302,10 +212,8 @@ class ListBlock extends Component {
       readOnly,
       // showEdit,
     } = this.state;
-    // const updateProps = {
-    //   showEdit, enableEdit: this.enableEdit, updatePostItem: this.updatePostItem, deletePostItem: this.deletePostItem,
-    // };
     // const itemProps = {updateRatingItem, ListArray};
+    console.log(`Listblock this.props: ${JSON.stringify(this.props)}`);
     return (
       <Composed>
       {({
@@ -344,7 +252,10 @@ class ListBlock extends Component {
 
               <div className="list-meta">
                 <p>Average Rating: {listblock.userAverageRating}</p>
-                <p>Number Of Items: {listblock.numberOfItems}</p>
+                <Label size="medium" >
+                  <Icon name='film'/> {listblock.numberOfItems}
+                </Label>
+
               </div>
 
               <Form.Field
@@ -359,29 +270,12 @@ class ListBlock extends Component {
 
               <Item.Group divided>
                 {
-                  listblock.items.map((item) => {
-                    itemProps.item = { ...item };
+                  listblock.items.map((item) =>
+                    // itemProps.item = { ...item };
                     // comment.author = { ...author };
-                    return (<ListItem key={item.id} {...itemProps}/>);
-                  })
+                    (<ListItem key={item.id} item = {item}/>))
                 }
               </Item.Group>
-              {/* <Form>
-                <Form.Field
-                  control={TextareaAutosize}
-                  className='list-content'
-                  name="content"
-                  readOnly={readOnly}
-                  disabled={loadingUpdate}
-                  defaultValue={listblock.content}
-                  onChange={this.handleChange}
-                  placeholder='Текст поста'
-                />
-              </Form> */}
-              {/*
-                authorIsCurrentUser
-                && <UpdateBlock updateProps={updateProps} /> */
-              }
             </Segment>
             {/* <CommentBlock list={listblock} userId={user.id} /> */}
           </RowDiv>

@@ -16,13 +16,14 @@ const List = mongoose.model('List', new mongoose.Schema({
   numberOfItems: Number,
   userAverageRating: Number,
   description: String,
-  items: [{ type: ObjectId, ref: 'item' }],
+  items: [{ type: String, ref: 'item' }],
   userId: String,
   createdDate: { type: Date, default: Date.now },
 }));
 
 const Item = mongoose.model('Item', new mongoose.Schema({
-  _id: ObjectId,
+  _id: String,
+  // imdbID: String,
   lists: [{ type: ObjectId, ref: 'List' }],
   title: String,
   yearOfRelease: String,
