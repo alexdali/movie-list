@@ -43,7 +43,7 @@ type List {
 type Item {
   id: String!
   userId: String!
-  list: [List]!
+  lists: [List]!
   title: String!
   yearOfRelease: String!
   genre: String!

@@ -223,7 +223,19 @@ const resolvers = {
       return sortItems;
     },
     // commentsByUser: async (_, { id }) => getCommentsByUser({ userId: id }),
-    itemsByUser: async (_, { id }) => getItemsByUser({ userId: id }),
+    itemsByUser: async (_, { id }) => {
+      const ItemsByUser = await getItemsByUser({ userId: id });
+      const ListsByUser = await getListsByUser({ userId: id });
+      // console.log(`q itemsByUser ItemsByUser: ${JSON.stringify(ItemsByUser)}`);
+      // console.log(`q itemsByUser ListsByUser: ${JSON.stringify(ListsByUser)}`);
+      return ItemsByUser.map(async (item) => {
+        const listArr = await item.lists.map((listOfItem) => ListsByUser.find((list) => listOfItem.toString() === list.id.toString()));
+        const updItem = { ...item };
+        updItem.lists = [...listArr];
+        // console.log(`q itemsByUser updItem: ${JSON.stringify(updItem)}`);
+        return updItem;
+      });
+    },
     searchItem: async (parent, arg, context, info) => {
       console.log(`q searchItem arg: ${JSON.stringify(arg)}`);
       const {

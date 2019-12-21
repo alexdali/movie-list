@@ -109,6 +109,7 @@ const getListsByUser = async (arg) => List.find({ userId: arg.userId })
       title: list.title,
       userId: list.userId,
       items: list.items,
+      numberOfItems: list.numberOfItems,
       userAverageRating: list.userAverageRating,
       description: list.description,
       createdDate: list.createdDate,
@@ -178,7 +179,8 @@ const getItemsByUser = async (arg) => Item.find({ userId: arg.userId })
     return result.map((item) => ({
       id: item._id,
       userId: item.userId,
-      listId: item.listId,
+      // listId: item.listId,
+      lists: item.lists,
       title: item.title,
       yearOfRelease: item.yearOfRelease,
       genre: item.genre,

@@ -148,21 +148,21 @@ class AddToListBlock extends Component {
     //   },
     // } = this.props;
     // const { value, rating } = this.state;
-    console.log(`AddToListBlock addToLists variables:  ${variables}`);
+    console.log(`AddToListBlock addToLists variables:  ${JSON.stringify(variables)}`);
     // console.log(`AddToListBlock addToLists this.state:  id: ${id}, value: ${value}, rating: ${rating}, imdbID: ${imdbID}`);
     // const ListInput = value.map((item) => ({ listId: item }));
-    console.log(`mut addToLists ListInput: ${JSON.stringify(ListInput)}`);
+    // console.log(`mut addToLists ListInput: ${JSON.stringify(ListInput)}`);
 
     const res = await updateItemInLists({
       variables: { variables },
       refetchQueries: [
         {
           query: LISTS_BY_USER_QUERY,
-          variables: { id },
+          variables: { id: variables.userId },
         },
         {
           query: ITEMS_BY_USER_QUERY,
-          variables: { id },
+          variables: { id: variables.userId },
         },
         // {
         //   query: ALL_LISTS_QUERY,
@@ -186,7 +186,7 @@ class AddToListBlock extends Component {
     console.log(`AddToListBlock render this.props: ${JSON.stringify(this.props)}`);
     const {
       user: { id }, item: {
-        imdbID, title, yearOfRelease, genre,
+        imdbID, title, year, genre,
       }, data, addToListShow,
     } = this.props;
     console.log(`AddToListBlock render data.listsByUser: ${JSON.stringify(data.listsByUser)}`);
@@ -200,7 +200,7 @@ class AddToListBlock extends Component {
       lists: ListInput,
       userRating: rating,
       title,
-      year: yearOfRelease,
+      yearOfRelease: year,
       genre,
     };
 

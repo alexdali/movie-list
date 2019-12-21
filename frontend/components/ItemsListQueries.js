@@ -52,18 +52,18 @@ const ITEMS_BY_USER_QUERY = gql`
       userId
       genre
       yearOfRelease
-      plotShort
+      #plotShort
       userRating
-      comment
+      #comment
       createdDate
-      lists {
+      list {
         id
         #userId
         title
-        description
-        numberOfItems
-        userAverageRating
-        createdDate
+        #description
+        #numberOfItems
+        #userAverageRating
+        #createdDate
       }
     }
   }
